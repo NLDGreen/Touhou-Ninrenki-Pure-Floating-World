@@ -1,0 +1,36 @@
+#TouhouDanmakufu[Plural]
+#ScriptVersion[3]
+#Title["Vs. Oparer"]
+#Text["Vs. Oparer"]
+
+@Initialize
+{
+	TPlural();
+	yield;
+}
+@MainLoop
+{
+}
+
+@Finalize
+{
+}
+
+task TPlural
+{
+	let dir = GetCurrentScriptDirectory();
+	let objEnemy = ObjEnemyBossScene_Create();
+	ObjEnemyBossScene_Add(objEnemy,0,dir ~ "GaraiyaNonSpell1.txt");
+	ObjEnemyBossScene_Add(objEnemy,0,dir ~ "GaraiyaSpell1.txt");
+	ObjEnemyBossScene_Add(objEnemy,1,dir ~ "GaraiyaNonSpell2.txt");
+	ObjEnemyBossScene_Add(objEnemy,1,dir ~ "GaraiyaSpell2.txt");
+	ObjEnemyBossScene_LoadInThread(objEnemy);
+	ObjEnemyBossScene_Regist(objEnemy);
+
+	while (!Obj_IsDeleted(objEnemy))
+	{
+	yield;
+	}
+
+	CloseScript(GetOwnScriptID());
+}
