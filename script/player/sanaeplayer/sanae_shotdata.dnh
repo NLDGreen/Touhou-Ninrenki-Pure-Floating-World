@@ -1,0 +1,29 @@
+shot_image  = "./gfx/sanae_shots.png"
+
+ShotData
+{
+	id = 1 //ID
+	rect = (0,0,12,17) //•`‰æŒ³‹éŒ`
+	render = ALPHA //•`‰æ•û–@
+	alpha=160
+	collision = 5.5
+}
+
+
+ShotData
+{
+	id = 2 //ID
+	rect = (0,17,12,34) //•`‰æŒ³‹éŒ`
+	render = ALPHA //•`‰æ•û–@
+	alpha=160
+	collision = 5.5
+}
+
+ShotData
+{
+	id = 3 //ID
+	rect = (0,34,12,51) //•`‰æŒ³‹éŒ`
+	render = ALPHA //•`‰æ•û–@
+	alpha=160
+	collision = 5.5
+}

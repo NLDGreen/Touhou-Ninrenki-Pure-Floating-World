@@ -1,0 +1,203 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Garaiya Spell Card 1"]
+#Text["Frog Sign [A Hop, A Skip And A Jump] 蛙符「三段跳び」"]
+
+let youCanFireNow = 0;
+let suck = 0;
+let shotCount = 1;
+let count = 0;
+let bossObj;
+let bossScene = GetEnemyBossSceneObjectID();
+let bossX = 0;
+let bossY = 0;
+let imgBoss = GetCurrentScriptDirectory ~ "Yuyuko.png";
+let spellCardBackground = GetCurrentScriptDirectory ~ "Textures/Donald Trump.jpg";
+let bossCutIn = GetCurrentScriptDirectory ~ "face07ct.png";
+
+#include "script/default_system/Default_ShotConst.txt"
+#include "script/default_system/Default_Effect.txt"
+#include "./Cutin/Cutin.txt"
+
+@Initialize {
+
+	SetAutoDeleteObject(true);
+
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+	ObjMove_SetPosition(bossObj,192,-100);
+	ObjEnemy_SetDamageRate(bossObj, 10, 10);
+	ObjMove_SetDestAtSpeed(bossObj,192,100,5);
+	
+	StartSpell;
+	scriptEnd;
+	mainTask;
+}
+
+@Event {
+
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE) {
+		SetScriptResult(300);
+	}
+	case(EV_REQUEST_TIMER) {
+		SetScriptResult(60);
+	}
+	case(EV_REQUEST_SPELL_SCORE) {
+		SetScriptResult(25000000);
+	}
+}
+
+@MainLoop {
+
+	bossX = ObjMove_GetX(bossObj);
+	bossY = ObjMove_GetY(bossObj);
+
+	ObjEnemy_SetIntersectionCircleToShot(bossObj,bossX,bossY,24);
+	ObjEnemy_SetIntersectionCircleToPlayer(bossObj,bossX,bossY,32);
+
+	yield;
+
+}
+
+@Finalize {
+
+}
+
+function wait(w) { loop(w) {yield;} }
+
+task StartSpell {
+	let objEnemy = GetEnemyBossObjectID[0];
+	loop(90){yield;}
+	
+	ObjCutin_SetSpellcardS3("Frog Sign \"A Hop, A Skip, and A Jump\"", 240, 104, 104);
+	ObjCutin_LaunchS3(YABUSAME, bossCutIn, "Normal");
+	ObjEnemyBossScene_StartSpell(bossScene);
+}
+
+task mainTask {
+	renderBoss;
+	fire;
+}
+
+task renderBG {
+
+}
+
+task renderBoss {
+
+	let dir;
+	let speed;
+
+	ObjPrim_SetTexture(bossObj,imgBoss);
+	ObjSprite2D_SetSourceRect(bossObj,0,0,224,200);
+	ObjSprite2D_SetDestCenter(bossObj);
+	ObjRender_SetScaleXYZ(bossObj,0.4,0.4,0);
+
+	while(!Obj_IsDeleted(bossObj)) {
+
+		dir = ObjMove_GetAngle(bossObj);
+		speed = ObjMove_GetSpeed(bossObj);
+
+		if (speed == 0) { ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+		else if (cos(dir) < 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+		else if (cos(dir) > 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,180,0); }
+		yield;
+	}
+
+}
+
+function angleToPlayer {
+
+	let dir = atan2(GetPlayerY-bossY,GetPlayerX-bossX);
+	return dir
+
+}
+	
+task fire {
+    let mirror = 1;
+    wait(60);
+    loop(4) {
+    kunai(mirror);
+    wait(120);
+    mirror = mirror * -1;
+    }
+    shots(16);
+    loop {
+    kunai(mirror);
+    wait(120);
+    mirror = mirror * -1;
+    }
+}
+
+task shots(loopCount) {
+	loop {
+		ascent(i in 0..loopCount) {
+			CreateShotA1(bossX,bossY,rand(2,2),rand(0,360),45,30);
+		}
+	wait(20);
+	}
+}
+
+task kunai(mirror) {
+    let count = 0;
+    loop(15) {
+    ascent(i in 0..10) {
+	if(mirror == 1) {
+        let obj = CreateShotA1(GetStgFrameWidth*0.06*i+count,0,6,90,76,30);
+        maiShots(obj,mirror);
+	}
+	if(mirror == -1) {
+	let obj = CreateShotA1(GetStgFrameWidth-(GetStgFrameWidth*0.06*i+count),0,6,90,76,30);
+        maiShots(obj,mirror);
+	}
+        }
+    wait(4);
+    count = count + 6;
+    }
+}
+
+task maiShots(obj,mirrorer) {
+    wait(30);
+    let mirror = 1;
+    loop(3) {
+    ObjMove_SetSpeed(obj,6);
+    ascent(i in 0..90) {
+        ObjMove_SetSpeed(obj,6-i/10);
+        yield;
+    }
+    wait(30);
+    mirror = mirror * -1;
+    ObjMove_SetAngle(obj,90+30*mirror*mirrorer);
+    ObjMove_SetSpeed(obj,4);
+    }
+    ObjMove_SetSpeed(obj,6);
+    ascent(i in 0..90) {
+        ObjMove_SetSpeed(obj,6-i/10);
+        yield;
+    }
+    wait(30);
+    mirror = mirror * -1;
+    ObjMove_SetAngle(obj,90);
+    ObjMove_SetAngularVelocity(obj,mirrorer*0.5);
+    ObjMove_SetSpeed(obj,4);
+}
+
+task laser {
+        CreateStraightLaserA1(ObjMove_GetX(GetPlayerObjectID),0,90,GetStgFrameHeight,10,12,156,60);
+}
+
+task scriptEnd {
+	while(ObjEnemy_GetInfo(bossObj,INFO_LIFE) > 0) {
+		yield;
+	}
+	
+	if(ObjEnemyBossScene_GetInfo(bossScene, INFO_PLAYER_SHOOTDOWN_COUNT) + ObjEnemyBossScene_GetInfo(bossScene, INFO_PLAYER_SPELL_COUNT) == 0) {
+		AddScore(ObjEnemyBossScene_GetInfo(bossScene, INFO_SPELL_SCORE));
+	}
+	
+	Obj_Delete(bossObj);
+	DeleteShotAll(TYPE_ALL,TYPE_ITEM);
+	CloseScript(GetOwnScriptID);
+
+}

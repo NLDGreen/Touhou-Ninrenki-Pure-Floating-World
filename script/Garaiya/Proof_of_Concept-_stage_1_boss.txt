@@ -1,0 +1,146 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Proof of Concept of Spellcard 1"]
+#Text["By Sevil Natas."]
+
+let youCanFireNow = 0;
+let suck = 0;
+let shotCount = 1;
+let count = 0;
+let bossObj;
+let bossX = 0;
+let bossY = 0;
+let imgBoss = GetCurrentScriptDirectory ~ "Yuyuko.png";
+let spellCardBackground = GetCurrentScriptDirectory ~ "Textures/Donald Trump.jpg";
+
+#include "script/default_system/Default_ShotConst.txt"
+
+@Initialize {
+
+	SetAutoDeleteObject(true);
+
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+	ObjMove_SetPosition(bossObj,192,-100);
+
+	ObjMove_SetDestAtSpeed(bossObj,192,100,5);
+
+	mainTask;
+}
+
+@Event {
+
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE) {
+		SetScriptResult(4500);
+	}
+	case(EV_REQUEST_TIMER) {
+		SetScriptResult(60);
+	}
+
+}
+
+@MainLoop {
+
+	bossX = ObjMove_GetX(bossObj);
+	bossY = ObjMove_GetY(bossObj);
+
+	ObjEnemy_SetIntersectionCircleToShot(bossObj,bossX,bossY,24);
+	ObjEnemy_SetIntersectionCircleToPlayer(bossObj,bossX,bossY,32);
+
+	yield;
+
+}
+
+@Finalize {
+
+}
+
+function wait(w) { loop(w) {yield;} }
+
+task mainTask {
+	renderBoss;
+	fire;
+	scriptEnd;
+}
+
+task renderBG {
+
+}
+
+task renderBoss {
+
+	let dir;
+	let speed;
+
+	ObjPrim_SetTexture(bossObj,imgBoss);
+	ObjSprite2D_SetSourceRect(bossObj,0,0,224,200);
+	ObjSprite2D_SetDestCenter(bossObj);
+	ObjRender_SetScaleXYZ(bossObj,0.4,0.4,0);
+
+	while(!Obj_IsDeleted(bossObj)) {
+
+		dir = ObjMove_GetAngle(bossObj);
+		speed = ObjMove_GetSpeed(bossObj);
+
+		if (speed == 0) { ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+		else if (cos(dir) < 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+		else if (cos(dir) > 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,180,0); }
+		yield;
+	}
+
+}
+
+function angleToPlayer {
+
+	let dir = atan2(GetPlayerY-bossY,GetPlayerX-bossX);
+	return dir
+
+}
+	
+task fire {
+	wait(60);
+	loop(10) {
+		loop(2) {
+			let obj = CreateStraightLaserA1(0,rand(0,GetStgFrameHeight),0,GetStgFrameWidth,10,12,156,60);
+			placeboShotLeft(obj);
+		}
+		loop(2) {
+			let obj = CreateStraightLaserA1(GetStgFrameWidth,rand(0,GetStgFrameHeight),180,GetStgFrameWidth,10,12,156,60);
+			placeboShotRight(obj);
+		}
+	wait(30);
+	}
+	loop {
+		loop(2) {
+			let obj = CreateStraightLaserA1(0,rand(0,GetStgFrameHeight),0,GetStgFrameWidth,10,12,156,60);
+			placeboShotLeft(obj);
+		}
+		loop(2) {
+			let obj = CreateStraightLaserA1(GetStgFrameWidth,rand(0,GetStgFrameHeight),180,GetStgFrameWidth,10,12,156,60);
+			placeboShotRight(obj);
+		}
+	loop(6) {
+	CreateShotA1(rand(0,GetStgFrameWidth),0,3,90,45,30);
+	wait(5);
+	}
+	}
+}
+
+task placeboShotLeft(obj) {
+	wait(60); loop(15) {CreateShotA1(ObjMove_GetX(obj),ObjMove_GetY(obj),15,0,76,0); yield;}
+}
+
+task placeboShotRight(obj) {
+	wait(60); loop(15) {CreateShotA1(ObjMove_GetX(obj),ObjMove_GetY(obj),15,180,76,0); yield;}
+}
+
+task scriptEnd {
+	while(ObjEnemy_GetInfo(bossObj,INFO_LIFE) > 0) {
+		yield;
+	}
+	Obj_Delete(bossObj);
+	DeleteShotAll(TYPE_ALL,TYPE_ITEM);
+	CloseScript(GetOwnScriptID);
+
+}

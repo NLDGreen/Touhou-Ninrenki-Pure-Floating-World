@@ -1,0 +1,35 @@
+#TouhouDanmakufu[Plural]
+#ScriptVersion[3]
+#Title["Garaiya Kaeruda"]
+#Text["Stage 1 Boss of Pure Floating World"] 
+
+#include "script/default_system/Default_ShotConst.txt"
+#include "script/default_system/Default_Effect.txt"
+
+@Initialize{
+    TPlural;
+    SetPlayerLife(10); 
+    /*ph3 does not have continues by default. 
+      You must make your own continue system or give a large number of lives if your script is difficult.*/
+ }
+ 
+ @MainLoop{
+    yield;
+ }
+ 
+ task TPlural{
+    let dir=GetCurrentScriptDirectory();
+    let obj=ObjEnemyBossScene_Create(); //Plurals are made from Boss Scene objects
+    //Sound(GetCurrentScriptDirectory~"music/boss.ogg"); 
+    //Sound is a user-made function to control the music. You can find the function under Sound Objects.
+    ObjEnemyBossScene_Add(obj,0,dir~"GaraiyaNonSpell1.txt"); //This is how you add a single to the plural. 
+    ObjEnemyBossScene_Add(obj,0,dir~"GaraiyaSpell1.txt"); //The 0 or 1 is the lifebar to add the attack to.
+    ObjEnemyBossScene_Add(obj,1,dir~"GaraiyaNonSpell2.txt");
+    ObjEnemyBossScene_Add(obj,1,dir~"GaraiyaSpell2.txt");
+    ObjEnemyBossScene_LoadInThread(obj); //You must load the plural inside the thread/process
+    ObjEnemyBossScene_Regist(obj); //You must register the Boss Scene object
+    while(!Obj_IsDeleted(obj)){ //Until the plural has been cleared, the TPlural yields.
+        yield;
+    }   
+    CloseScript(GetOwnScriptID()); //Close the plural.
+ }

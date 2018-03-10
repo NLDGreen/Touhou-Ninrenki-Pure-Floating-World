@@ -1,0 +1,69 @@
+shot_image = "./img/shot.png"
+
+ShotData{
+	id = 1
+	rect = (1, 1, 16, 32)
+	render = ALPHA
+	alpha = 255
+	collision = 16
+}
+
+ShotData{
+	id = 2
+	rect = (16, 1, 32, 32)
+	render = ALPHA
+	alpha = 128
+	collision = 16
+}
+
+ShotData{
+	id = 3
+	rect = (32, 32, 48, 64)
+	render = ALPHA
+	alpha = 255
+	collision = 16
+}
+
+ShotData{
+	id = 4
+	
+	AnimationData{
+		animation_data = (1, 0, 160, 32, 192)
+		animation_data = (1, 32, 160, 64, 192)
+		animation_data = (2, 64, 160, 96, 192)
+		animation_data = (2, 96, 160, 128, 192)
+		animation_data = (3, 128, 160, 160, 192)
+		animation_data = (3, 160, 160, 192, 192)
+		animation_data = (4, 192, 160, 224, 192)
+		animation_data = (4, 224, 160, 256, 192)
+	}
+	
+	render = ALPHA
+	alpha = 255
+	collision = 32
+}
+
+ShotData{
+	id = 5
+	rect = (32, 64, 48, 80)
+	render = ALPHA
+	alpha = 255
+	collision = 16
+}
+
+ShotData{
+	id = 6
+	rect = (224, 1, 255, 32)
+	render = ADD
+	alpha = 96
+	collision = 16
+	angular_velocity = 3
+}
+
+ShotData{
+	id = 7
+	rect = (240, 34, 255, 66)
+	render = ADD
+	alpha = 255
+	collision = 16
+}

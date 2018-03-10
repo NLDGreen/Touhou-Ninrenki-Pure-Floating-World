@@ -1,0 +1,99 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Spellcard 1 1"]
+#Text["1st spellcard"]
+
+let laser1 = 270;
+let laser2 = 270;
+let anglecount = 0;
+let shotAdd = 0;
+let makeshiftTimer = 120;
+let rainbow = 205;
+let mirror = 1;
+let count = 0;
+let bossObj;
+let bossX = 0;
+let bossY = 0;
+let imgBoss = GetCurrentScriptDirectory ~ "face07ct.png";
+let spellCardBackground = GetCurrentScriptDirectory ~ "Fujiwara no Mokou.png";
+
+#include "script/default_system/Default_ShotConst.txt"
+#include "./Cutin/Cutin.txt"
+
+@Initialize {
+
+    SetAutoDeleteObject(true);
+
+    bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+    ObjEnemy_Regist(bossObj);
+    ObjMove_SetDestAtFrame(bossObj,192,100,60);
+
+    StartSpell;
+    mainTask;
+}
+
+@Event {
+
+    alternative(GetEventType())
+    case(EV_REQUEST_LIFE) {
+        SetScriptResult(4000);
+    }
+
+    case(EV_REQUEST_TIMER) {
+        SetScriptResult(120);
+    }
+
+    case(EV_REQUEST_SPELL_SCORE) {
+        SetScriptResult(666);
+    }
+
+}
+
+@MainLoop {
+
+    bossX = ObjMove_GetX(bossObj);
+    bossY = ObjMove_GetY(bossObj);
+
+    ObjEnemy_SetIntersectionCircleToShot(bossObj,bossX,bossY,24);
+    ObjEnemy_SetIntersectionCircleToPlayer(bossObj,bossX,bossY,32);
+
+    yield;
+
+}
+
+@Finalize {
+
+}
+
+function wait(w) { loop(w) {yield;} }
+
+function makeshiftTime {
+    loop {
+        makeshiftTimer = makeshiftTimer - 1;
+        wait(60);
+    }
+}
+
+task StartSpell {
+    let objEnemy = GetEnemyBossObjectID[0];
+    loop(90) {yield;}
+
+    ObjCutin_SetSpellcardS3("Unknown Foe 'Malice of the Third Eye'",240,104,104);
+    ObjCutin_LaunchS3(YABUSAME, imgBoss, "Extra");
+    ObjEnemyBossScene_StartSpell(GetEnemyBossSceneObjectID);
+}
+
+task mainTask {
+    //renderBoss;
+    //fire;
+    //scriptEnd;
+}
+
+task renderBG {
+    let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+    Obj_SetRenderPriority(obj,21);
+    ObjPrim_SetTexture(obj,spellCardBackground);
+    ObjSprite2D_SetSourceRect(obj,0,0,361,200);
+    ObjSprite2D_SetDestRect(obj,0,0,GetStgFrameWidth,GetStgFrameHeight);
+}
+

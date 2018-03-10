@@ -1,0 +1,1161 @@
+#include"./CutIn.txt"
+
+let playerObject = GetPlayerObjectID();
+let playerAlive = true;
+let prevAlive = false;
+let playerSpellActive = false;
+
+
+let snowFlakeEffectMain = ID_INVALID;
+let snowFlakeEffectBack = ID_INVALID;
+
+let snowFlakeStatus = 2;
+let snowFlakeLoopActive = false;
+
+
+let optionsAlive = false;
+let playerPower = 400;
+let powerEnabled = true;
+
+
+let deathSound = ObjSound_Create;
+
+let itemSound = ObjSound_Create;
+let grazeSound = ObjSound_Create;
+
+let spellGetSound = ObjSound_Create;
+let lifeGetSound = ObjSound_Create;
+let powerUpSound = ObjSound_Create;
+
+let shotSound = ObjSound_Create;
+let basicSlashSound = ObjSound_Create;
+
+let spellUseSound = ObjSound_Create;
+let slashSound = ObjSound_Create;
+let spellShotSound = ObjSound_Create;
+
+task LoadSounds{
+	ObjSound_Load(deathSound, GetCurrentScriptDirectory ~ "sounds/se_pldead00.wav");
+	
+	ObjSound_Load(itemSound, GetCurrentScriptDirectory ~ "sounds/se_item00.wav");
+	ObjSound_Load(grazeSound, GetCurrentScriptDirectory ~ "sounds/se_graze.wav");
+	
+	ObjSound_Load(spellGetSound, GetCurrentScriptDirectory ~ "sounds/se_cardget.wav");
+	ObjSound_Load(lifeGetSound, GetCurrentScriptDirectory ~ "sounds/se_extend.wav");
+	ObjSound_Load(powerUpSound, GetCurrentScriptDirectory ~ "sounds/se_powerup.wav");
+	
+	ObjSound_Load(shotSound, GetCurrentScriptDirectory ~ "sounds/se_plst00.wav");
+	ObjSound_Load(basicSlashSound, GetCurrentScriptDirectory ~ "sounds/se_slash.wav");
+	
+	ObjSound_Load(spellUseSound, GetCurrentScriptDirectory ~ "sounds/se_nep00.wav");
+	ObjSound_Load(spellShotSound, GetCurrentScriptDirectory ~ "sounds/se_tan00.wav");
+	ObjSound_Load(slashSound, GetCurrentScriptDirectory ~ "sounds/se_slash2.wav");
+	
+	
+	ObjSound_SetVolumeRate(deathSound, 80);
+	ObjSound_SetVolumeRate(grazeSound, 80);
+	ObjSound_SetVolumeRate(shotSound, 80);
+	ObjSound_SetVolumeRate(basicSlashSound, 80);
+}
+
+task DrawSprite{
+	
+	ObjPrim_SetTexture(playerObject, GetCurrentScriptDirectory ~ "img/player.png");
+	
+	let changeTime = 4;
+	let frame = 0;
+	
+	let sFrame1 = 0;
+	let sFrame2 = 0;
+	let sFrame3 = 0;
+	
+	loop{
+		if(GetVirtualKeyState(VK_RIGHT) == KEY_PUSH || GetVirtualKeyState(VK_RIGHT) == KEY_HOLD){
+			
+			ObjSprite2D_SetSourceRect(playerObject, 32*sFrame2, 96, 32*(sFrame2 + 1), 144);
+			
+			if(frame >= changeTime){
+				sFrame2 += 1;
+				
+				if(sFrame2 >= 7){
+					sFrame2 = 3;
+				}
+			}
+			
+			sFrame1 = 0;
+			sFrame3 = 0;
+		}
+		
+		else if(GetVirtualKeyState(VK_LEFT) == KEY_PUSH || GetVirtualKeyState(VK_LEFT) == KEY_HOLD){
+			
+			ObjSprite2D_SetSourceRect(playerObject, 32*sFrame1, 48, 32*(sFrame1 + 1), 96);
+			
+			if(frame >= changeTime){
+				sFrame1 += 1;
+				
+				if(sFrame1 >= 7){
+					sFrame1 = 3;
+				}
+			}
+			
+			sFrame2 = 0;
+			sFrame3 = 0;
+		}
+		
+		else{
+			ObjSprite2D_SetSourceRect(playerObject, 32*sFrame3, 0, 32*(sFrame3 + 1), 48);
+			
+			if(frame >= changeTime){
+				sFrame3 += 1;
+			}
+			
+			if(sFrame3 >= 7 && frame >= changeTime){
+				sFrame3 = 0;
+			}
+			
+			sFrame1 = 0;
+			sFrame2 = 0;
+		}
+		
+		frame++;
+		
+		if(frame >= changeTime + 1){
+			frame = 0;
+		}
+		
+		ObjSprite2D_SetDestCenter(playerObject);
+		
+		yield;
+	}
+}
+
+task DrawHitbox{
+	
+	SnowFlakeLoop;
+	
+	loop{
+		if(GetVirtualKeyState(VK_SLOWMOVE) == KEY_PUSH || GetVirtualKeyState(VK_SLOWMOVE) == KEY_HOLD){
+			if(snowFlakeStatus != 1 && playerAlive){
+				SnowFlakeCreate;
+			}
+		}
+		else{
+			if(snowFlakeStatus != 2){
+				SnowFlakeDelete;
+			}
+		}
+		
+		yield;
+	}
+}
+
+task SnowFlakeCreate{
+	
+	snowFlakeStatus = 1;
+	
+	snowFlakeLoopActive = true;
+	
+	yield;
+	
+	snowFlakeEffectMain = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(snowFlakeEffectMain, BLEND_ALPHA);
+	Obj_SetRenderPriority(snowFlakeEffectMain, 0.31);
+	ObjPrim_SetTexture(snowFlakeEffectMain, GetCurrentScriptDirectory() ~ "img/player.png");
+	ObjSprite2D_SetDestRect(snowFlakeEffectMain, -32, -32, 32, 32);
+	ObjSprite2D_SetSourceRect(snowFlakeEffectMain, 0, 144, 63, 207);
+	ObjRender_SetX(snowFlakeEffectMain, GetPlayerX);
+	ObjRender_SetY(snowFlakeEffectMain, GetPlayerY);
+	
+	snowFlakeEffectBack = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(snowFlakeEffectBack, BLEND_ALPHA);
+	Obj_SetRenderPriority(snowFlakeEffectBack, 0.29);
+	ObjPrim_SetTexture(snowFlakeEffectBack, GetCurrentScriptDirectory() ~ "img/player.png");
+	ObjSprite2D_SetDestRect(snowFlakeEffectBack, -32, -32, 32, 32);
+	ObjSprite2D_SetSourceRect(snowFlakeEffectBack, 0, 144, 63, 207);
+	ObjRender_SetX(snowFlakeEffectBack, GetPlayerX);
+	ObjRender_SetY(snowFlakeEffectBack, GetPlayerY);
+	
+	let frame = 0;
+	
+	let scale = 0;
+	
+	while(snowFlakeStatus == 1 && frame <= 10){
+		
+		snowFlakeLoopActive = true;
+	
+		if(frame < 7){
+			scale += 1.5/8;
+		}
+		
+		if(frame >= 7){
+			scale -= 0.1/2;
+		}
+		
+		ObjRender_SetScaleXYZ(snowFlakeEffectMain, scale, scale, scale);
+		ObjRender_SetScaleXYZ(snowFlakeEffectBack, scale, scale, scale);
+		
+		frame++;
+		
+		yield;
+	}
+	
+	ObjRender_SetScaleXYZ(snowFlakeEffectMain, 1, 1, 1);
+	ObjRender_SetScaleXYZ(snowFlakeEffectBack, 1, 1, 1);
+}
+
+task SnowFlakeDelete{
+	
+	snowFlakeStatus = 2;
+	
+	let frame = 0;
+	
+	let lastScale = ObjRender_GetScaleX(snowFlakeEffectMain);
+	let scale = ObjRender_GetScaleX(snowFlakeEffectMain);
+	
+	while(snowFlakeStatus == 2 && frame <= 10){
+		
+		snowFlakeLoopActive = true;
+		
+		scale -= lastScale/10;
+		
+		ObjRender_SetScaleXYZ(snowFlakeEffectMain, scale, scale, scale);
+		ObjRender_SetScaleXYZ(snowFlakeEffectBack, scale, scale, scale);
+		
+		frame++;
+		
+		yield;
+	}
+	
+	snowFlakeLoopActive = false;
+	
+	Obj_Delete(snowFlakeEffectMain);
+	Obj_Delete(snowFlakeEffectBack);
+}
+
+task SnowFlakeLoop{
+	loop{
+		if(snowFlakeLoopActive){
+			
+			ObjRender_SetAngleZ(snowFlakeEffectMain, ObjRender_GetAngleZ(snowFlakeEffectMain) - 3);
+			ObjRender_SetX(snowFlakeEffectMain, GetPlayerX);
+			ObjRender_SetY(snowFlakeEffectMain, GetPlayerY);
+			
+			ObjRender_SetAngleZ(snowFlakeEffectBack, ObjRender_GetAngleZ(snowFlakeEffectBack) + 3);
+			ObjRender_SetX(snowFlakeEffectBack, GetPlayerX);
+			ObjRender_SetY(snowFlakeEffectBack, GetPlayerY);
+		}
+		
+		if(!playerAlive){
+			SnowFlakeDelete;
+		}
+		
+		yield;
+	}
+}
+
+task BlinkEffect{
+	
+	let changeTime = 4;
+	let frame = 0;
+	
+	loop(180){
+		
+		frame++;
+		
+		if(frame >= changeTime){
+			Obj_SetVisible(playerObject, !Obj_IsVisible(playerObject));
+			frame = 0;
+		}
+		
+		yield;
+	}
+	
+	Obj_SetVisible(playerObject, true);
+}
+
+task CreateShots{
+	
+	let inv = false;
+	let frame = 0;
+	
+	loop{
+		if(GetVirtualKeyState(VK_SHOT) == KEY_PUSH || GetVirtualKeyState(VK_SHOT) == KEY_HOLD){
+			frame++;
+			
+			if(frame >= 20 && IsPermitPlayerShot && playerAlive){
+				
+				ObjSound_Play(basicSlashSound);
+				
+				frame = 0;
+				
+				BasicSlash(inv);
+				inv = !inv;
+			}
+			
+			if(frame == 0 || frame == 5 || frame == 10 || frame == 15){
+				if(optionsAlive && playerPower >= 100 && IsPermitPlayerShot && playerAlive){
+					ObjSound_Play(shotSound);
+				}
+			}
+		}
+		
+		yield;
+	}
+}
+
+task BasicSlash(inv){
+	
+	let scale = 1.5;
+	
+	if(inv){
+		scale = -scale;
+	}
+	
+	let slash = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(slash, BLEND_ADD_RGB);
+	Obj_SetRenderPriority(slash, 0.31);
+	ObjPrim_SetTexture(slash, GetCurrentScriptDirectory() ~ "img/shot.png");
+	ObjSprite2D_SetSourceRect(slash, 0, 16, 32, 88);
+	ObjSprite2D_SetDestRect(slash, -16, -36, 16, 36);
+	ObjRender_SetScaleXYZ(slash, 1.5, scale, 1.5);
+	ObjRender_SetX(slash, GetPlayerX);
+	ObjRender_SetY(slash, GetPlayerY - 30);
+	ObjRender_SetAngleZ(slash, 270);
+	ObjRender_SetColor(slash, 164, 196, 164);
+	
+	let xTile = 0;
+	
+	let changeTime = 4;
+	let frame = 0;
+	
+	let x = -30;
+	
+	let dmg = 3;
+	
+	if(GetVirtualKeyState(VK_SLOWMOVE) == KEY_PUSH || GetVirtualKeyState(VK_SLOWMOVE) == KEY_HOLD){
+		dmg = 3.5;
+	}
+	
+	loop(5){
+		let b = ID_INVALID;
+		b = CreatePlayerShotA1(GetPlayerX + x, GetPlayerY - 30, 4, 270, dmg, 10000, 1);
+		ObjShot_SetDeleteFrame(b, 4*changeTime);
+		Obj_SetVisible(b, false);
+		x += 15;
+	}
+	
+	loop(4*changeTime){
+		ObjRender_SetY(slash, ObjRender_GetY(slash) - 4);
+		
+		frame++;
+		
+		if(frame >= changeTime){
+			ObjSprite2D_SetSourceRect(slash, 32*xTile, 16, 32*(xTile + 1), 88);
+			frame = 0;
+			xTile++;
+		}
+		
+		yield;
+	}
+	
+	Obj_Delete(slash);
+}
+
+task BasicShotBullet(x, y, spd, dir, dmg, color){
+	
+	if(playerSpellActive){dmg = dmg/4;}
+	
+	let b = ID_INVALID;
+	b = CreatePlayerShotA1(x, y, spd, dir, dmg, 1, color);
+	
+	let multiplier = 1;
+	let z = 0;
+	
+	while(!Obj_IsDeleted(b)){
+		
+		x = ObjMove_GetX(b);
+		y = ObjMove_GetY(b);
+		z = ObjMove_GetAngle(b);
+		
+		if(multiplier > 0){
+			multiplier -= dmg/500;
+		}
+		
+		ObjShot_SetDamage(b, dmg*multiplier);
+		
+		yield;
+	}
+	
+	let effect = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(effect, BLEND_ALPHA);
+	Obj_SetRenderPriority(effect, 0.20);
+	ObjPrim_SetTexture(effect, GetCurrentScriptDirectory() ~ "img/shot.png");
+	ObjSprite2D_SetDestRect(effect, -8, -8, 8, 8);
+	ObjSprite2D_SetSourceRect(effect, 48, 32, 64, 48);
+	ObjRender_SetAngleZ(effect, 90 + z);
+	ObjRender_SetX(effect, x);
+	ObjRender_SetY(effect, y);
+	
+	let xTile = 0;
+	let frame = 0;
+	
+	let alpha = 128;
+	
+	loop(15){
+		ObjSprite2D_SetSourceRect(effect, 16*xTile, 0, 16*(xTile + 1), 16);
+		ObjRender_SetY(effect, ObjRender_GetY(effect) - 2);
+		ObjRender_SetAlpha(effect, alpha);
+		
+		alpha -= 128/30;
+		
+		frame++;
+		
+		if(frame >= 5){
+			xTile++;
+		}
+		
+		yield;
+	}
+	
+	Obj_Delete(effect);
+}
+
+task CreateOptions{
+	
+	//DisplayPower;
+	
+	loop{
+		if(!optionsAlive && playerAlive){
+			
+			if(playerPower >= 100 && playerPower < 200 && powerEnabled){
+				if(prevAlive){ObjSound_Play(powerUpSound);}
+				
+				Option(0, -45, 0, -25, 270.5, 2, 3.2, 1.5, 3, 1);
+			}
+			
+			if(playerPower >= 200 && playerPower < 300 && powerEnabled){
+				if(prevAlive){ObjSound_Play(powerUpSound);}
+				
+				Option(30, 0, 10, -25, 270.5, 0, 3.2, 1.5, 3, 1);
+				Option(-30, 0, -10, -25, 269.5, 0, 3.2, 1.5, 3, 1);
+			}
+			
+			if(playerPower >= 300 && playerPower < 400 && powerEnabled){
+				if(prevAlive){ObjSound_Play(powerUpSound);}
+				
+				Option(0, -45, 0, -25, 270.5, 2, 3.7, 2, 3, 1);
+				
+				Option(10, 25, 40, -5, 300, 3, 0, 1.5, 4, 2);
+				Option(-10, 25, -40, -5, 240, 3, 0, 1.5, 4, 2);
+			}
+			
+			if(playerPower >= 400 || !powerEnabled){
+				if(prevAlive){ObjSound_Play(powerUpSound);}
+				
+				Option(30, 0, 10, -25, 270.5, 0, 3.2, 1.5, 3, 1);
+				Option(-30, 0, -10, -25, 269.5, 0, 3.2, 1.5, 3, 1);
+				
+				Option(10, 25, 40, -5, 300, 3, 0, 1.5, 4, 2);
+				Option(-10, 25, -40, -5, 240, 3, 0, 1.5, 4, 2);
+			}
+			
+			optionsAlive = true;
+		}
+		
+		if(!playerAlive){
+			optionsAlive = false;
+		}
+		
+		if(playerPower > 400){
+			playerPower = 400;
+		}
+		
+		if(playerPower < 0){
+			playerPower = 0;
+		}
+		
+		if(!powerEnabled){
+			playerPower = 400;
+		}
+		
+		let lp = playerPower;
+		
+		yield;
+		
+		if(lp < 100 && playerPower >= 100 && powerEnabled){optionsAlive = false; yield;}
+		if(lp < 200 && playerPower >= 200 && powerEnabled){optionsAlive = false; yield;}
+		if(lp < 300 && playerPower >= 300 && powerEnabled){optionsAlive = false; yield;}
+		if(lp < 400 && playerPower >= 400 && powerEnabled){optionsAlive = false; yield;}
+	}
+}
+
+task DisplayPower{
+	
+	let powerDisplay = ObjText_Create;
+	Obj_SetRenderPriority(powerDisplay, 0.90);
+	
+	ObjRender_SetX(powerDisplay, 428);
+	ObjRender_SetY(powerDisplay, 254);
+	
+	ObjText_SetFontSize(powerDisplay, 12);
+	ObjText_SetFontBold(powerDisplay, true);
+	ObjText_SetFontColorTop(powerDisplay, 128, 128, 228);
+	
+	loop{
+		ObjText_SetText(powerDisplay, playerPower);
+		yield;
+	}
+}
+
+task Option(xn, yn, xf, yf, dirN, dirOffset, dmgN, dmgF, shotNum, color){
+	
+	let option = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(option, BLEND_ALPHA);
+	Obj_SetRenderPriority(option, 0.31);
+	ObjPrim_SetTexture(option, GetCurrentScriptDirectory() ~ "img/option.png");
+	ObjSprite2D_SetDestRect(option, -16, -16, 16, 16);
+	ObjRender_SetScaleXYZ(option, 0, 0, 0);
+	ObjRender_SetX(option, GetPlayerX + xn);
+	ObjRender_SetY(option, GetPlayerY + yn);
+	ObjRender_SetAngleZ(option, 270);
+	
+	let overlay = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(overlay, BLEND_ALPHA);
+	Obj_SetRenderPriority(overlay, 0.31);
+	ObjPrim_SetTexture(overlay, GetCurrentScriptDirectory() ~ "img/option.png");
+	ObjSprite2D_SetDestRect(overlay, -16, -16, 16, 16);
+	ObjRender_SetScaleXYZ(overlay, 1, 1, 1);
+	ObjRender_SetX(overlay, GetPlayerX + xn);
+	ObjRender_SetY(overlay, GetPlayerY + yn);
+	ObjRender_SetAngleZ(overlay, 270);
+	
+	let optionEffect = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(optionEffect, BLEND_ALPHA);
+	Obj_SetRenderPriority(optionEffect, 0.30);
+	ObjPrim_SetTexture(optionEffect, GetCurrentScriptDirectory() ~ "img/option.png");
+	ObjSprite2D_SetDestRect(optionEffect, -24, -24, 24, 24);
+	ObjRender_SetScaleXYZ(optionEffect, 0, 0, 0);
+	ObjRender_SetX(optionEffect, GetPlayerX + xn);
+	ObjRender_SetY(optionEffect, GetPlayerY + yn);
+	ObjRender_SetAlpha(optionEffect, 128);
+	
+	let travelTime = 5;
+	
+	let optionPos = CreateShotA1(GetPlayerX + xn, GetPlayerY + yn, 0, 0, 0, 0);
+	ObjShot_SetIntersectionEnable(optionPos, false);
+	ObjShot_SetAutoDelete(optionPos, false);
+	
+	let xTile = 0;
+	let yTile = 0;
+	let yTile2 = 0;
+	
+	if(color == 1){yTile = 1;yTile2 = 0;}
+	if(color == 2){yTile = 2;yTile2 = 3;}
+	
+	let scale = 0;
+	let count = 0;
+	
+	let frame = 0;
+	let frame2 = -1;
+	let frame3 = 0;
+	let frame4 = 0;
+	
+	let colorChangeTime = 10;
+	
+	let offSetTime = 40;
+	
+	let offSetDir = rand(0, 360);
+	let offSet = 0;
+	
+	let shotColor = 1;
+	if(color == 2){shotColor = 1;}
+	
+	yield;
+	
+	while(optionsAlive && playerAlive){
+		
+		let focus = GetVirtualKeyState(VK_SLOWMOVE) == KEY_PUSH || GetVirtualKeyState(VK_SLOWMOVE) == KEY_HOLD;
+		
+		ObjRender_SetScaleXYZ(option, scale, scale, scale);
+		ObjRender_SetScaleXYZ(overlay, scale, scale, scale);
+		ObjRender_SetScaleXYZ(optionEffect, scale*(2/3), scale*(2/3), scale*(2/3));
+		
+		ObjRender_SetX(option, ObjMove_GetX(optionPos));
+		ObjRender_SetY(option, ObjMove_GetY(optionPos));
+		ObjRender_SetX(optionEffect, ObjRender_GetX(option) + 2);
+		ObjRender_SetY(optionEffect, ObjRender_GetY(option) - 5);
+		ObjRender_SetX(overlay, ObjRender_GetX(option));
+		ObjRender_SetY(overlay, ObjRender_GetY(option));
+		
+		ObjSprite2D_SetSourceRect(option, xTile*32, yTile*32, (xTile + 1)*32, (yTile + 1)*32);
+		ObjSprite2D_SetSourceRect(overlay, xTile*32, yTile2*32, (xTile + 1)*32, (yTile2 + 1)*32);
+		ObjSprite2D_SetSourceRect(optionEffect, xTile*48, 128, (xTile + 1)*48, 176);
+		
+		
+		if(count <= 21){
+			count++;
+		}
+		
+		if(count <= 20){
+			scale += 1/20;
+		}
+		
+		if(focus){
+			ObjMove_SetDestAtFrame(optionPos, GetPlayerX + xf, GetPlayerY + yf, travelTime);
+		}
+		else{
+			ObjMove_SetDestAtFrame(optionPos, GetPlayerX + xn, GetPlayerY + yn, travelTime);
+		}
+		
+		frame++;
+		
+		if(GetVirtualKeyState(VK_SHOT) == KEY_PUSH || GetVirtualKeyState(VK_SHOT) == KEY_HOLD){
+			if(!focus && frame >= 5){
+				
+				let dir = dirN;
+				
+				if(dirN > 270){dir -= ((shotNum - 1)*3);}
+				if(dirN < 270){dir += ((shotNum - 1)*3);}
+				
+				dir += dirOffset;
+				
+				loop(shotNum){
+					if(IsPermitPlayerShot){
+						BasicShotBullet(ObjRender_GetX(option), ObjRender_GetY(option), 20, dir, dmgN, shotColor);
+					}
+					
+					if(dirN > 270){dir += 3;}
+					if(dirN < 270){dir -= 3;}
+				}
+				
+				frame = 0;
+			}
+			
+			if(focus && frame >= 5){
+				
+				let enemy = GetAllEnemyID;
+				
+				let dir = 270;
+				
+				let savedENum = 0;
+				let eNum = 0;
+				
+				if(length(enemy) > 0){
+					
+					let lastDistance = 10000;
+					
+					loop(length(enemy)){
+						let distance = GetObjectDistance(option, enemy[eNum]);
+						
+						if(distance < lastDistance && distance != -1){
+							savedENum = eNum;
+						}
+						
+						lastDistance = distance;
+						
+						eNum++;
+					}
+					
+					let x = ObjMove_GetX(enemy[savedENum]);
+					let y = ObjMove_GetY(enemy[savedENum]);
+					
+					let boss = GetEnemyBossObjectID;
+					
+					if(length(boss) > 0){
+						x = ObjMove_GetX(boss[0]);
+						y = ObjMove_GetY(boss[0]);
+					}
+					
+					dir = atan2(y - ObjRender_GetY(option), x - ObjRender_GetX(option));
+				}
+				
+				if(dirN > 270){dir -= 3;}
+				if(dirN < 270){dir += 3;}
+				
+				loop(2){
+					if(IsPermitPlayerShot){
+						BasicShotBullet(ObjRender_GetX(option), ObjRender_GetY(option), 40, dir, dmgF, shotColor);
+					}
+					
+					if(dirN > 270){dir += 3;}
+					if(dirN < 270){dir -= 3;}
+				}
+				
+				frame = 0;
+			}
+		}
+		
+		if(count > 20){frame2++;}
+		
+		if(frame2 <= offSetTime && frame2 != -1){
+			
+			offSet += 0.04;
+			
+			ObjRender_SetX(option, ObjMove_GetX(optionPos) + offSet*cos(offSetDir));
+			ObjRender_SetY(option, ObjMove_GetY(optionPos) + offSet*sin(offSetDir));
+		}
+		
+		if(frame2 > offSetTime){
+			
+			offSet -= 0.04;
+			
+			ObjRender_SetX(option, ObjMove_GetX(optionPos) + offSet*cos(offSetDir));
+			ObjRender_SetY(option, ObjMove_GetY(optionPos) + offSet*sin(offSetDir));
+		}
+		
+		if(frame2 >= (offSetTime*2)){
+			offSetDir = rand(0, 360);
+			frame2 = 0;
+		}
+		
+		frame3++;
+		
+		if(frame3 >= 4){
+			xTile++;
+			
+			if(xTile >= 8){
+				xTile = 0;
+			}
+			
+			frame3 = 0;
+		}
+		if(focus){
+			frame4++;
+		}
+		else{
+			frame4--;
+		}
+		
+		if(frame4 > colorChangeTime){
+			frame4 = colorChangeTime;
+		}
+		
+		if(frame4 < 0){
+			frame4 = 0;
+		}
+		
+		ObjRender_SetAlpha(option, 255 - (frame4*(255/colorChangeTime)));
+		ObjRender_SetAlpha(overlay, (frame4*(255/colorChangeTime)));
+		
+		if(frame4 == colorChangeTime){
+			if(color == 1){yTile = 0;}
+			if(color == 2){yTile = 3;}
+			
+			ObjRender_SetAlpha(option, 255);
+			ObjRender_SetAlpha(overlay, 0);
+		}
+		
+		if(frame4 < colorChangeTime){
+			if(color == 1){yTile = 1;}
+			if(color == 2){yTile = 2;}
+		}
+		
+		yield;
+	}
+	
+	scale = 1;
+	
+	loop(20){
+		
+		scale -= 1/20;
+		
+		ObjRender_SetScaleXYZ(option, scale, scale, scale);
+		ObjRender_SetScaleXYZ(overlay, scale, scale, scale);
+		ObjRender_SetScaleXYZ(optionEffect, scale*(2/3), scale*(2/3), scale*(2/3));
+		
+		ObjRender_SetX(option, ObjMove_GetX(optionPos));
+		ObjRender_SetY(option, ObjMove_GetY(optionPos));
+		ObjRender_SetX(optionEffect, ObjRender_GetX(option) + 2);
+		ObjRender_SetY(optionEffect, ObjRender_GetY(option) - 5);
+		ObjRender_SetX(overlay, ObjRender_GetX(option));
+		ObjRender_SetY(overlay, ObjRender_GetY(option));
+		
+		if(GetVirtualKeyState(VK_SLOWMOVE) == KEY_PUSH || GetVirtualKeyState(VK_SLOWMOVE) == KEY_HOLD){
+			ObjMove_SetDestAtFrame(optionPos, GetPlayerX + xf, GetPlayerY + yf, travelTime);
+		}
+		else{
+			ObjMove_SetDestAtFrame(optionPos, GetPlayerX + xn, GetPlayerY + yn, travelTime);
+		}
+		
+		yield;
+	}
+	
+	Obj_Delete(option);
+	Obj_Delete(overlay);
+	Obj_Delete(optionEffect);
+}
+
+task Spell(focus){
+	
+	let spellObject = GetSpellManageObject;
+	playerSpellActive = true;
+	
+	SpellUseCutIn(GetCurrentScriptDirectory ~ "img/cutIn.png", 0, 0, 320, 440, 0.5);
+	SetPlayerInvincibilityFrame(460);
+	ObjSound_Play(spellUseSound);
+	SetPlayerSpeed(0.6, 0.6);
+	MagicCircle(460);
+	
+	if(!focus){
+		SpellUseName("\"Paschal Moon-Reflecting Satellite Slash\"");
+		
+		loop(60){yield;}
+		
+		SpellSlash(1, GetPlayerX, GetPlayerY, 270, 0.2, 0, 300, 1, 30, 3);
+		
+		let x1 = GetPlayerX;
+		let x2 = GetPlayerX;
+		
+		loop(20){yield;}
+		
+		loop(7){
+			x1 += 40;
+			x2 -= 40;
+			
+			if(x1 > -16 && x1 < 464){
+				SpellSlash(1, x1, GetPlayerY, 270, 0.2, 0, 300, 1, 30, 3);
+			}
+			
+			if(x2 > -16 && x2 < 464){
+				SpellSlash(1, x2, GetPlayerY, 270, 0.2, 0, 300, 1, 30, 3);
+			}
+			
+			loop(20){yield;}
+		}
+		
+		loop(240){yield;}
+		SetPlayerSpeed(5, 2);
+		playerSpellActive = false;
+		
+		loop(60){yield;}
+		Obj_Delete(spellObject);
+	}
+	
+	if(focus){
+		SpellUseName("Deva God Sword \"Components of Konpaku\"");
+		
+		let x = GetPlayerX;
+		let y = GetPlayerY;
+		
+		let dir = 210;
+		let color = 1;
+		let del = 240;
+		
+		loop(60){yield;}
+		
+		loop(7){
+			SpellSlash(2, x + 180*cos(dir), y + 180*sin(dir), dir, 1, color, del, 1.2, 120, 1.2);
+			
+			color++;
+			dir += 20;
+			del -= 20;
+			
+			loop(20){yield;}
+		}
+		
+		loop(120){yield;}
+		
+		let enemy = GetAllEnemyID;
+		
+		let savedENum = 0;
+		let eNum = 0;
+		
+		dir = 270;
+		
+		if(length(enemy) > 0){
+			
+			let lastDistance = 10000;
+			
+			loop(length(enemy)){
+				let distance = GetObjectDistance(playerObject, enemy[eNum]);
+				
+				if(distance < lastDistance && distance != -1){
+					savedENum = eNum;
+				}
+				
+				lastDistance = distance;
+				
+				eNum++;
+			}
+			
+			let x = ObjMove_GetX(enemy[savedENum]);
+			let y = ObjMove_GetY(enemy[savedENum]);
+			
+			let boss = GetEnemyBossObjectID;
+			
+			if(length(boss) > 0){
+				x = ObjMove_GetX(boss[0]);
+				y = ObjMove_GetY(boss[0]);
+			}
+			
+			dir = atan2(y - GetPlayerY, x - GetPlayerX);
+		}
+		
+		dir -= 40;
+		
+		loop(3){
+			if(IsPermitPlayerSpell){
+				ObjSound_Play(spellShotSound);
+				SpellShot(GetPlayerX, GetPlayerY, 2, dir, 5, 2, true, 0);
+				SpellShot(GetPlayerX, GetPlayerY, 3, dir, 5, 2, true, 0);
+			}
+			
+			dir += 40;
+		}
+		
+		loop(60){yield;}
+		SetPlayerSpeed(5, 2);
+		
+		loop(60){yield;}
+		playerSpellActive = false;
+		Obj_Delete(spellObject);
+	}
+}
+
+task SpellSlash(type, x, y, dir, dmg, color, del, scaleMax, scaleTime, slashLength){
+	
+	ObjSound_Play(slashSound);
+	
+	let slash = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(slash, BLEND_ALPHA);
+	Obj_SetRenderPriority(slash, 0.54);
+	ObjPrim_SetTexture(slash, GetCurrentScriptDirectory() ~ "img/shot.png");
+	ObjSprite2D_SetDestRect(slash, -128, -12, 128, 12);
+	ObjSprite2D_SetSourceRect(slash, 0, 89, 256, 105);
+	ObjRender_SetAngleZ(slash, dir);
+	ObjRender_SetX(slash, x);
+	ObjRender_SetY(slash, y);
+	
+	let overlay = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(overlay, BLEND_ADD_RGB);
+	Obj_SetRenderPriority(overlay, 0.55);
+	ObjPrim_SetTexture(overlay, GetCurrentScriptDirectory() ~ "img/shot.png");
+	ObjSprite2D_SetDestRect(overlay, -128, -12, 128, 12);
+	ObjSprite2D_SetSourceRect(overlay, 0, 106, 256, 122);
+	ObjRender_SetAngleZ(overlay, dir);
+	ObjRender_SetX(overlay, x);
+	ObjRender_SetY(overlay, y);
+	
+	if(color == 0){Obj_SetVisible(overlay, false);}
+	
+	if(color == 1){ObjRender_SetColor(overlay, 56, 56, 16);}
+	if(color == 2){ObjRender_SetColor(overlay, 192, 192, 48);}
+	if(color == 3){ObjRender_SetColor(overlay, 180, 72, 32);}
+	if(color == 4){ObjRender_SetColor(overlay, 184, 32, 40);}
+	if(color == 5){ObjRender_SetColor(overlay, 180, 56, 180);}
+	if(color == 6){ObjRender_SetColor(overlay, 32, 24, 192);}
+	if(color == 7){ObjRender_SetColor(overlay, 40, 180, 180);}
+	
+	let scale = 0;
+	
+	loop(scaleTime){
+		ObjRender_SetScaleXYZ(slash, slashLength, scale, slashLength);
+		ObjRender_SetScaleXYZ(overlay, slashLength, scale, slashLength);
+		scale += scaleMax/scaleTime;
+		
+		yield;
+	}
+	
+	let frame = 0;
+	
+	let showHitbox = false;
+	let spd = 35;
+	
+	loop(del){
+		
+		if(type == 1){
+			SpellShot(x - (spd/2)*cos(dir), y - (spd/2)*sin(dir), spd, dir, dmg, 2, showHitbox, 10);
+			SpellShot(x + (spd/2)*cos(dir), y + (spd/2)*sin(dir), spd, dir + 180, dmg, 2, showHitbox, 10);
+		}
+		
+		if(type == 2){
+			SpellShot(x - (spd/2)*cos(dir), y - (spd/2)*sin(dir), spd, dir, dmg, 2, showHitbox, 4);
+			SpellShot(x + (spd/2)*cos(dir), y + (spd/2)*sin(dir), spd, dir + 180, dmg, 2, showHitbox, 4);
+		}
+		
+		yield;
+	}
+	
+	scale = scaleMax;
+	
+	loop(scaleTime/2){
+		ObjRender_SetScaleXYZ(slash, slashLength, scale, slashLength);
+		ObjRender_SetScaleXYZ(overlay, slashLength, scale, slashLength);
+		scale -= scaleMax/(scaleTime/2);
+		
+		yield;
+	}
+	
+	Obj_Delete(slash);
+	Obj_Delete(overlay);
+}
+
+task SpellShot(x, y, spd, dir, dmg, color, visible, deleteTime){
+	
+	let b = ID_INVALID;
+	b = CreatePlayerShotA1(x, y, spd, dir, dmg, 10000, color);
+	ObjShot_SetEraseShot(b, true);
+	Obj_SetVisible(b, visible);
+	
+	if(deleteTime > 0){
+		ObjShot_SetDeleteFrame(b, deleteTime);
+	}
+}
+
+task MagicCircle(time){
+	
+	let magicCircle = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+	ObjPrim_SetPrimitiveType(magicCircle, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetVertexCount(magicCircle, 66);
+	ObjRender_SetBlendType(magicCircle, BLEND_ALPHA);
+	Obj_SetRenderPriority(magicCircle, 0.30);
+	ObjPrim_SetTexture(magicCircle, GetCurrentScriptDirectory() ~ "img/circle.png");
+	
+	let width = 10;
+	
+	let alt = true;
+	
+	let dir = 0;
+	let r = 100;
+	let x = 0;
+	
+	let v = 0;
+	
+	loop(66){
+		ObjPrim_SetVertexPosition(magicCircle, v, r*cos(dir), r*sin(dir), 0);
+		ObjPrim_SetVertexUVT(magicCircle, v, x, v*8);
+		ObjRender_SetX(magicCircle, GetPlayerX);
+		ObjRender_SetY(magicCircle, GetPlayerY);
+		
+		if(!alt){r += width; x = 0;}
+		if(alt){r -= width; x = 16;}
+		alt = !alt;
+		
+		dir += 360/64;
+		
+		v++;
+	}
+	
+	let alpha = 0;
+	let z = 0;
+	
+	loop(time){
+		
+		ObjRender_SetX(magicCircle, GetPlayerX);
+		ObjRender_SetY(magicCircle, GetPlayerY);
+		ObjRender_SetAlpha(magicCircle, alpha);
+		ObjRender_SetAngleZ(magicCircle, z);
+		
+		if(alpha < 128){
+			alpha += 2;
+		}
+		
+		z += 3;
+		
+		alt = true;
+		dir = 0;
+		r -= 100/time;
+		v = 0;
+		
+		loop(66){
+			
+			let rOriginal = r;
+			
+			if(r < 0){
+				r = 0;
+			}
+			
+			ObjPrim_SetVertexPosition(magicCircle, v, r*cos(dir), r*sin(dir), 0);
+			
+			r = rOriginal;
+		
+			if(!alt){r += width; x = 0;}
+			if(alt){r -= width; x = 16;}
+			alt = !alt;
+			
+			dir += 360/64;
+			
+			v++;
+		}
+		
+		yield;
+	}
+	
+	Obj_Delete(magicCircle);
+}
+
+task DisableSpell(time){
+	SetForbidPlayerSpell(true);
+	loop(time){yield;}
+	SetForbidPlayerSpell(false);
+}
+
+task DeathItem(type, x, y, xd, yd){
+	let i = CreateItemA1(type, x, y, 0);
+	
+	let dir = atan2(yd - y, xd - x);
+	
+	loop(240){
+		ObjMove_SetX(i, ObjMove_GetX(i) + cos(dir));
+		ObjMove_SetY(i, ObjMove_GetY(i) + sin(dir));
+		yield;
+	}
+}
+
+task GrazeEffect{
+	
+	let effect = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(effect, BLEND_ALPHA);
+	Obj_SetRenderPriority(effect, 0.35);
+	ObjPrim_SetTexture(effect, GetCurrentScriptDirectory() ~ "img/graze.png");
+	ObjSprite2D_SetDestRect(effect, -16, -16, 16, 16);
+	ObjSprite2D_SetSourceRect(effect, 0, 0, 32, 32);
+	ObjRender_SetColor(effect, 255, 160, 100);
+	ObjRender_SetAlpha(effect, 164);
+	
+	let dir = rand(0, 360);
+	let scale = 0.5;
+	
+	ObjRender_SetX(effect, GetPlayerX + 10*cos(dir));
+	ObjRender_SetY(effect, GetPlayerY + 10*sin(dir));
+	
+	loop(15){
+		ObjRender_SetX(effect, ObjRender_GetX(effect) + 4*cos(dir));
+		ObjRender_SetY(effect, ObjRender_GetY(effect) + 4*sin(dir));
+		ObjRender_SetScaleXYZ(effect, scale, scale, scale);
+		
+		scale -= 0.5/15;
+		
+		yield;
+	}
+	
+	Obj_Delete(effect);
+}
+
+task ExplosionEffect{
+	
+	let effect = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(effect, BLEND_ALPHA);
+	Obj_SetRenderPriority(effect, 0.50);
+	ObjPrim_SetTexture(effect, GetCurrentScriptDirectory() ~ "img/effect.png");
+	ObjSprite2D_SetDestRect(effect, -32, -32, 32, 32);
+	ObjSprite2D_SetSourceRect(effect, 0, 0, 64, 64);
+	ObjRender_SetX(effect, GetPlayerX);
+	ObjRender_SetY(effect, GetPlayerY);
+	
+	let alpha = 255;
+	let scale = 0;
+	
+	while(alpha > 0){
+		
+		ObjRender_SetScaleXYZ(effect, scale, scale, scale);
+		ObjRender_SetAlpha(effect, alpha);
+		
+		alpha -= 8;
+		scale += 0.15;
+		
+		yield;
+	}
+	
+	Obj_Delete(effect);
+}

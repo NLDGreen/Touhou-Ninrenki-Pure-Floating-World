@@ -1,0 +1,265 @@
+let pfPlayerCutInSpellName;
+let pfPlayerCutInSpellNameGhost;
+let pfPlayerCutInNameEffect;
+
+let pfPlayerCutInDpellNameDeleted = true;
+let pfPlayerCutInSpellNameGhostDeleted = true;
+let pfPlayerCuIinameEffectDeleted = true;
+
+let cutInAlpha = 0;
+
+task SpellUseName(n){
+	
+	pfPlayerCutInDpellNameDeleted = false;
+	pfPlayerCutInSpellNameGhostDeleted = false;
+	
+	pfPlayerCutInSpellName = ObjText_Create;
+	ObjText_SetText(pfPlayerCutInSpellName, n);
+	
+	ObjRender_SetX(pfPlayerCutInSpellName, 16);
+	ObjRender_SetY(pfPlayerCutInSpellName, 418);
+	ObjText_SetMaxWidth(pfPlayerCutInSpellName, 999);
+	
+	ObjText_SetFontSize(pfPlayerCutInSpellName, 14);
+	ObjText_SetFontBold(pfPlayerCutInSpellName, true);
+	ObjText_SetFontType(pfPlayerCutInSpellName, "Arial");
+	ObjText_SetFontColorTop(pfPlayerCutInSpellName, 128, 128, 228);
+	
+	pfPlayerCutInSpellNameGhost = ObjText_Create;
+	ObjText_SetText(pfPlayerCutInSpellNameGhost, n);
+	
+	ObjRender_SetX(pfPlayerCutInSpellNameGhost, 16);
+	ObjRender_SetY(pfPlayerCutInSpellNameGhost, 418);
+	ObjText_SetMaxWidth(pfPlayerCutInSpellNameGhost, 999);
+	
+	ObjText_SetFontSize(pfPlayerCutInSpellNameGhost, 14);
+	ObjText_SetFontBold(pfPlayerCutInSpellNameGhost, true);
+	ObjText_SetFontType(pfPlayerCutInSpellNameGhost, "Arial");
+	ObjText_SetFontColorTop(pfPlayerCutInSpellNameGhost, 128, 128, 228);
+	
+	let tScale1 = 10;
+	let tScale2 = 10;
+	
+	let tAlpha1 = 0;
+	let tAlpha2 = 0;
+	
+	let yOff = 400;
+	
+	let tYOff1 = -yOff;
+	let tYOff2 = -yOff;
+	
+	ascent(i in 0..90){
+		if(!pfPlayerCutInDpellNameDeleted){
+			ObjRender_SetY(pfPlayerCutInSpellName, 418 + tYOff1);
+			
+			ObjRender_SetY(pfPlayerCutInSpellNameGhost, 418 + tYOff2);
+			
+			ObjRender_SetScaleXYZ(pfPlayerCutInSpellName, tScale1, tScale1, tScale1);
+			ObjRender_SetScaleXYZ(pfPlayerCutInSpellNameGhost, tScale2, tScale2, tScale2);
+			
+			ObjRender_SetAlpha(pfPlayerCutInSpellNameGhost, tAlpha2);
+			ObjRender_SetAlpha(pfPlayerCutInSpellName, tAlpha1);
+			
+			if(i + 1 <= 60){
+				tScale1 -= 9/60;
+				tAlpha1 += 255/60;
+				
+				tYOff1 += yOff/60;
+			}
+			
+			if(i + 1 >= 30){
+				tScale2 -= 9/60;
+				tAlpha2 += 255/60;
+				
+				tYOff2 += yOff/60;
+			}
+			
+			yield;
+		}
+	}
+	
+	if(!pfPlayerCutInDpellNameDeleted){
+		Obj_Delete(pfPlayerCutInSpellNameGhost);
+		pfPlayerCutInSpellNameGhostDeleted = true;
+	}
+	
+	pfPlayerCutInDpellNameDeleted = false;
+	
+	pfPlayerCutInNameEffect = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(pfPlayerCutInNameEffect, BLEND_ALPHA);
+	Obj_SetRenderPriority(pfPlayerCutInNameEffect, 0.40);
+	ObjPrim_SetTexture(pfPlayerCutInNameEffect, GetCurrentScriptDirectory() ~ "img/effect.png");
+	ObjSprite2D_SetDestRect(pfPlayerCutInNameEffect, -128, -20, 128, 20);
+	ObjSprite2D_SetSourceRect(pfPlayerCutInNameEffect, 0, 64, 256, 104);
+	
+	let eScale = 10;
+	
+	let eAlpha = 0;
+	
+	let xOff = 400;
+	yOff = 400;
+	
+	let eXOff = xOff;
+	let eYOff = -yOff;
+	
+	loop(60){
+		if(!pfPlayerCutInDpellNameDeleted){
+			ObjRender_SetX(pfPlayerCutInNameEffect, 144 + eXOff);
+			ObjRender_SetY(pfPlayerCutInNameEffect, 424 + eYOff);
+			
+			ObjRender_SetScaleXYZ(pfPlayerCutInNameEffect, eScale, eScale, eScale);
+			ObjRender_SetAlpha(pfPlayerCutInNameEffect, eAlpha);
+			
+			eScale -= 9/60;
+			eAlpha += 195/60;
+			
+			eXOff -= xOff/60;
+			eYOff += yOff/60;
+			yield;
+		}
+	}
+	
+	loop(30){yield;}
+	
+	let x = 14;
+	let y = 418;
+	
+	while(x > 0 && !pfPlayerCutInDpellNameDeleted){
+		ObjRender_SetY(pfPlayerCutInSpellName, y);
+		ObjRender_SetY(pfPlayerCutInNameEffect, y);
+		
+		y -= x;
+		
+		if(y < 220){
+			x -= 0.58;
+		}
+		yield;
+	}
+	
+	if(!pfPlayerCutInDpellNameDeleted){
+		ObjRender_SetY(pfPlayerCutInSpellName, 46);
+		ObjRender_SetY(pfPlayerCutInNameEffect, 46);
+	}
+	
+	loop(120){yield;}
+	
+	xOff = 0;
+	
+	loop(60){
+		if(!pfPlayerCutInDpellNameDeleted){
+			ObjRender_SetX(pfPlayerCutInSpellName, 16 + xOff);
+			ObjRender_SetX(pfPlayerCutInNameEffect, 144 + xOff);
+			
+			xOff -= 10;
+			
+			yield;
+		}
+	}
+	
+	if(!pfPlayerCutInDpellNameDeleted){
+		Obj_Delete(pfPlayerCutInSpellName);
+		Obj_Delete(pfPlayerCutInNameEffect);
+		
+		pfPlayerCutInDpellNameDeleted = true;
+		pfPlayerCutInDpellNameDeleted = true;
+	}
+}
+
+task DeleteSpellName{
+	if(!pfPlayerCutInDpellNameDeleted){
+		
+		pfPlayerCutInDpellNameDeleted = true;
+		
+		Obj_Delete(pfPlayerCutInSpellName);
+		if(!pfPlayerCutInSpellNameGhostDeleted){Obj_Delete(pfPlayerCutInSpellNameGhost);}
+		if(!pfPlayerCutInDpellNameDeleted){Obj_Delete(pfPlayerCutInNameEffect);}
+	}
+}
+
+task SpellUseCutIn(img, left, top, right, bottom, scale){
+	
+	let effect1 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(effect1, GetCurrentScriptDirectory() ~ "img/cutInEffect.png");
+	ObjRender_SetBlendType(effect1, BLEND_ALPHA);
+	Obj_SetRenderPriority(effect1, 0.70);
+	
+	let effect2 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(effect2, GetCurrentScriptDirectory() ~ "img/cutInEffect.png");
+	ObjRender_SetBlendType(effect2, BLEND_ALPHA);
+	Obj_SetRenderPriority(effect2, 0.70);
+	ObjRender_SetAngleZ(effect2, 270);
+	
+	let effect3 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetScaleXYZ(effect3, scale, scale, scale);
+	ObjRender_SetBlendType(effect3, BLEND_ALPHA);
+	Obj_SetRenderPriority(effect3, 0.70);
+	ObjPrim_SetTexture(effect3, img);
+	
+	let width = right - left;
+	let height = bottom - top;
+	
+	ObjRender_SetX(effect3, -4 + (width*scale));
+	
+	ObjSprite2D_SetSourceRect(effect1, 0, 0, 80, 1356);
+	ObjSprite2D_SetSourceRect(effect2, 0, 0, 80, 1356);
+	ObjSprite2D_SetSourceRect(effect3, left, top, right, bottom);
+	
+	ObjSprite2D_SetDestRect(effect1, -40, -768, 40, 768);
+	ObjSprite2D_SetDestRect(effect2, -40, -768, 40, 768);
+	ObjSprite2D_SetDestRect(effect3, -width, -height, width, height);
+	
+	let x1 = 40;
+	let y1 = -306;
+	
+	let x2 = -376;
+	let y2 = 444;
+	
+	let y3 = (height/2) - 144;
+	
+	let fall = false;
+	while(cutInAlpha > -1){
+		
+		ObjRender_SetX(effect1, x1);
+		ObjRender_SetY(effect1, y1);
+		
+		ObjRender_SetX(effect2, x2);
+		ObjRender_SetY(effect2, y2);
+		
+		ObjRender_SetY(effect3, y3);
+		
+		ObjRender_SetAlpha(effect1, cutInAlpha);
+		ObjRender_SetAlpha(effect2, cutInAlpha);
+		ObjRender_SetAlpha(effect3, cutInAlpha/1.75);
+		
+		x1 += 1;
+		y1 += 6;
+		
+		x2 += 6;
+		y2 -= 1;
+		
+		y3 += 1.125;
+		
+		if(cutInAlpha > 255){
+			fall = true;
+			addAlpha;
+		}
+		
+		if(!fall){
+			cutInAlpha += 3;
+		}
+		
+		yield;
+	}
+	
+	Obj_Delete(effect1);
+	Obj_Delete(effect2);
+	Obj_Delete(effect3);
+}
+
+task addAlpha{
+	loop(60){yield;}
+	while(cutInAlpha > 0){
+		cutInAlpha -= 0.4;
+		yield;
+	}
+}

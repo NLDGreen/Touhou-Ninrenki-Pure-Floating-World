@@ -1,0 +1,199 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Stage 1 Midboss: Suwako (Lunatic Spell)"]
+#Text[""]
+
+let youCanFireNow = 0;
+let suck = 0;
+let shotCount = 1;
+let loopCount = 24;
+let bossObj;
+let bossScene = GetEnemyBossSceneObjectID();
+let bossX = 0;
+let bossY = 0;
+let imgBoss = GetCurrentScriptDirectory ~ "Yuyuko.png";
+let spellCardBackground = GetCurrentScriptDirectory ~ "Textures/Donald Trump.jpg";
+let bossCutIn = GetCurrentScriptDirectory ~ "face07ct.png";
+
+#include "script/default_system/Default_ShotConst.txt"
+#include "script/default_system/Default_Effect.txt"
+#include "./Cutin/Cutin.txt"
+
+@Initialize {
+
+	SetAutoDeleteObject(true);
+
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+	ObjMove_SetPosition(bossObj,192,-100);
+
+	ObjMove_SetDestAtSpeed(bossObj,192,100,5);
+	
+	StartSpell;
+	scriptEnd;
+	mainTask;
+}
+
+@Event {
+
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE) {
+		SetScriptResult(300);
+	}
+	case(EV_REQUEST_TIMER) {
+		SetScriptResult(60);
+	}
+	case(EV_REQUEST_SPELL_SCORE) {
+		SetScriptResult(10000000);
+	}
+}
+
+@MainLoop {
+
+	bossX = ObjMove_GetX(bossObj);
+	bossY = ObjMove_GetY(bossObj);
+
+	ObjEnemy_SetIntersectionCircleToShot(bossObj,bossX,bossY,24);
+	ObjEnemy_SetIntersectionCircleToPlayer(bossObj,bossX,bossY,32);
+
+	yield;
+
+}
+
+@Finalize {
+
+}
+
+function wait(w) { loop(w) {yield;} }
+
+task StartSpell {
+	let objEnemy = GetEnemyBossObjectID[0];
+	loop(90){yield;}
+	
+	ObjCutin_SetSpellcardS3("Native Faith \"Prelude to an Inter-faith Conflict\"", 240, 104, 104);
+	ObjCutin_LaunchS3(YABUSAME, bossCutIn, "Lunatic");
+	ObjEnemyBossScene_StartSpell(GetEnemyBossSceneObjectID);
+}
+
+task mainTask {
+	renderBoss;
+	fire;
+}
+
+task renderBG {
+
+}
+
+task renderBoss {
+
+	let dir;
+	let speed;
+
+	ObjPrim_SetTexture(bossObj,imgBoss);
+	ObjSprite2D_SetSourceRect(bossObj,0,0,224,200);
+	ObjSprite2D_SetDestCenter(bossObj);
+	ObjRender_SetScaleXYZ(bossObj,0.4,0.4,0);
+
+	while(!Obj_IsDeleted(bossObj)) {
+
+		dir = ObjMove_GetAngle(bossObj);
+		speed = ObjMove_GetSpeed(bossObj);
+
+		if (speed == 0) { ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+		else if (cos(dir) < 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+		else if (cos(dir) > 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,180,0); }
+		yield;
+	}
+
+}
+
+function angleToPlayer {
+
+	let dir = atan2(GetPlayerY-bossY,GetPlayerX-bossX);
+	return dir
+
+}
+
+task fire {
+    wait(90);
+    loop {
+    loop(4) {
+        stream;
+    loop(10) {
+        wait(18);
+        random;
+    }
+    }
+    wait(180);
+    loop(16) {
+        aimed;
+        wait(12);
+    }
+    wait(120);
+}
+}
+
+task stream {
+    let angleCount = 0;
+    let count = 0;
+    loop(120) {
+        ascent(i in 0..2) {
+            let obj = CreateShotA1((GetStgFrameWidth/2)*(i+0.5)+(50*sin(count*2)),GetStgFrameHeight-count*(GetStgFrameHeight/120),0,90,45,30);
+            editShots(obj,angleCount);
+        }
+        yield;
+        angleCount = angleCount + 18;
+        count = count + 1.5;
+    }
+}
+
+task editShots(obj,angleCount) {
+    ObjMove_SetSpeed(obj,0);
+    wait(90);
+    ObjMove_SetAngle(obj,angleCount+90);
+    ObjMove_SetSpeed(obj,1);
+}
+
+task aimed {
+    let obj = CreateShotA1(rand(0,GetStgFrameWidth),0,3,0,25,30);
+    ObjMove_SetAngle(obj, GetAngleToPlayer(obj));
+    surroundingSnowballs(obj);
+    wait(60);
+}
+
+task random {
+    let obj = CreateShotA1(rand(0,GetStgFrameWidth),0,3,rand(60,120),25,30);
+    surroundingSnowballs(obj);
+    wait(60);
+}
+
+task surroundingSnowballs(obj) {
+	ascent(i in 0..16) {
+		CreateShotA1(ObjMove_GetX(obj)+15*cos(i*(360/16)),ObjMove_GetY(obj)+15*sin(i*(360/16)),3,ObjMove_GetAngle(obj),1,30);
+	}
+}
+
+// task streams {
+	// loop(GetStgFrameHeight/3) {
+		// ascent(i in 0..loopCount) {
+			// let obj = CreateShotA1(GetStgFrameWidth/loopCount+1,GetStgFrameHeight-count*3,0,45,30);
+		// }
+		// yield;
+		// count = count + 3;
+	// }
+// }
+
+task scriptEnd {
+	while(ObjEnemy_GetInfo(bossObj,INFO_LIFE) > 0) {
+		yield;
+	}
+	
+	if(ObjEnemyBossScene_GetInfo(bossScene, INFO_PLAYER_SHOOTDOWN_COUNT) +ObjEnemyBossScene_GetInfo(bossScene, INFO_PLAYER_SPELL_COUNT) == 0) {
+		AddScore(ObjEnemyBossScene_GetInfo(bossScene, INFO_SPELL_SCORE));
+	}
+	
+	Obj_Delete(bossObj);
+	DeleteShotAll(TYPE_ALL,TYPE_ITEM);
+	CloseScript(GetOwnScriptID);
+
+}

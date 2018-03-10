@@ -1,0 +1,17 @@
+shot_image = "./img/shot.png"
+
+ShotData{
+	id = 1
+	rect = (0, 0, 15, 15)
+	render = ALPHA
+	alpha = 256
+	collision = 8
+}
+
+ShotData{
+	id = 2
+	rect = (0, 123, 64, 187)
+	render = ADD
+	alpha = 256
+	collision = 16
+}
