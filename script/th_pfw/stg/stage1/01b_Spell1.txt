@@ -28,7 +28,7 @@ let bossCutIn = GetCurrentScriptDirectory ~ "face07ct.png";
 	ObjMove_SetPosition(bossObj,192,-100);
 	ObjEnemy_SetDamageRate(bossObj, 10, 10);
 	ObjMove_SetDestAtSpeed(bossObj,192,100,5);
-	
+
 	StartSpell;
 	scriptEnd;
 	mainTask;
@@ -69,7 +69,7 @@ function wait(w) { loop(w) {yield;} }
 task StartSpell {
 	let objEnemy = GetEnemyBossObjectID[0];
 	loop(90){yield;}
-	
+
 	ObjCutin_SetSpellcardS3("Frog Sign \"A Hop, A Skip, and A Jump\"", 240, 104, 104);
 	ObjCutin_LaunchS3(YABUSAME, bossCutIn, "Normal");
 	ObjEnemyBossScene_StartSpell(bossScene);
@@ -113,7 +113,7 @@ function angleToPlayer {
 	return dir
 
 }
-	
+
 task fire {
     let mirror = 1;
     wait(60);
@@ -191,11 +191,11 @@ task scriptEnd {
 	while(ObjEnemy_GetInfo(bossObj,INFO_LIFE) > 0) {
 		yield;
 	}
-	
+
 	if(ObjEnemyBossScene_GetInfo(bossScene, INFO_PLAYER_SHOOTDOWN_COUNT) + ObjEnemyBossScene_GetInfo(bossScene, INFO_PLAYER_SPELL_COUNT) == 0) {
 		AddScore(ObjEnemyBossScene_GetInfo(bossScene, INFO_SPELL_SCORE));
 	}
-	
+
 	Obj_Delete(bossObj);
 	DeleteShotAll(TYPE_ALL,TYPE_ITEM);
 	CloseScript(GetOwnScriptID);
