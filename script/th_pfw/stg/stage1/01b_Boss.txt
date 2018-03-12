@@ -1,11 +1,12 @@
 #TouhouDanmakufu[Plural]
 #ScriptVersion[3]
-#Title["Vs. Oparer"]
-#Text["Vs. Oparer"]
+#Title["Vs. Garaiya Kaeruda"]
+#Text["Vs. Garaiya Kaeruda"]
 
 @Initialize
 {
 	TPlural();
+	SetPlayerLife(10);
 	yield;
 }
 @MainLoop
@@ -20,10 +21,10 @@ task TPlural
 {
 	let dir = GetCurrentScriptDirectory();
 	let objEnemy = ObjEnemyBossScene_Create();
-	ObjEnemyBossScene_Add(objEnemy,0,dir ~ "GaraiyaNonSpell1.txt");
-	ObjEnemyBossScene_Add(objEnemy,0,dir ~ "GaraiyaSpell1.txt");
-	ObjEnemyBossScene_Add(objEnemy,1,dir ~ "GaraiyaNonSpell2.txt");
-	ObjEnemyBossScene_Add(objEnemy,1,dir ~ "GaraiyaSpell2.txt");
+	ObjEnemyBossScene_Add(objEnemy,0,dir ~ "01b_Attack1.txt");
+	ObjEnemyBossScene_Add(objEnemy,0,dir ~ "01b_Spell1.txt");
+	ObjEnemyBossScene_Add(objEnemy,1,dir ~ "01b_Attack2.txt");
+	ObjEnemyBossScene_Add(objEnemy,1,dir ~ "01b_Spell2.txt");
 	ObjEnemyBossScene_LoadInThread(objEnemy);
 	ObjEnemyBossScene_Regist(objEnemy);
 

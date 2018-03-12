@@ -17,7 +17,7 @@ let bossCutIn = GetCurrentScriptDirectory ~ "face07ct.png";
 
 #include "script/default_system/Default_ShotConst.txt"
 #include "script/default_system/Default_Effect.txt"
-#include "./Cutin/Cutin.txt"
+#include "script/th_pfw/lib/lib_SpellCard.dnh"
 
 @Initialize {
 
