@@ -1,5 +1,6 @@
 #TouhouDanmakufu[Single]
 #ScriptVersion[3]
+#System["script/th_pfw/system/System.dnh"]
 #Title["Garaiya Spell Card 1"]
 #Text["Frog Sign [A Hop, A Skip And A Jump] 蛙符「三段跳び」"]
 

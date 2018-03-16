@@ -1,0 +1,24 @@
+#include "./lib_SpellCard.dnh"
+
+task BossName(bossObj, bossName) {
+	let objText = ObjText_Create();
+	let alpha = 255;
+	
+	ObjText_SetText(objText, bossName);
+	ObjText_SetFontSize(objText, 11);
+	ObjText_SetFontColorTop(objText, 255, 255, 255);
+	ObjText_SetFontColorBottom(objText, 255, 0, 255);
+	ObjText_SetFontBorderType(objText, BORDER_SHADOW);
+	ObjText_SetFontBorderColor(objText,128, 0, 128);
+	ObjText_SetFontBorderWidth(objText, 2);
+	ObjRender_SetPosition(objText,2,2,0);
+	Obj_SetRenderPriority(objText,0.7);
+	
+	while(!Obj_IsDeleted(bossObj)){
+		if(GetPlayerY>80 && alpha<255){alpha+=10;}
+		if(GetPlayerY<=80 && alpha>100){alpha-=10;}
+		ObjRender_SetAlpha(objText,alpha);
+		yield;
+	}
+	Obj_Delete(objText);
+}

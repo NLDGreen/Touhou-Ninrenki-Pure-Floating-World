@@ -1,7 +1,8 @@
 #TouhouDanmakufu[Single]
 #ScriptVersion[3]
-#Title["Kekuro Spell Card 1"]
-#Text["Visage \"Death Coated in Fog\" 視界「霧で覆われた死」"]
+#System["script/th_pfw/system/System.dnh"]
+#Title["Kekuro Spell Card 2"]
+#Text["E/N: Smoke Sign \"Road of the Lightweight Cloth\" 煙符「煙々羅の道」 [r] H/L: Smoke Sign \"Enenra's Silk Road\" 煙符「煙々羅シルクロード」"]
 
 let youCanFireNow = 0;
 let suck = 0;
@@ -17,7 +18,7 @@ let bossCutIn = GetCurrentScriptDirectory ~ "face07ct.png";
 
 #include "script/default_system/Default_ShotConst.txt"
 #include "script/default_system/Default_Effect.txt"
-#include "script/th_pfw/lib/lib_SpellCard.dnh"
+#include "script/th_pfw/lib/lib_boss.dnh"
 
 @Initialize {
 
@@ -28,6 +29,7 @@ let bossCutIn = GetCurrentScriptDirectory ~ "face07ct.png";
 	ObjMove_SetPosition(bossObj,192,-100);
 	ObjEnemy_SetDamageRate(bossObj, 10, 10);
 	ObjMove_SetDestAtSpeed(bossObj,192,100,5);
+	BossName(bossObj, "Kemuri Kekuro");
 
 	StartSpell;
 	scriptEnd;
@@ -70,7 +72,7 @@ task StartSpell {
     let objEnemy = GetEnemyBossObjectID[0];
 	loop(90){yield;}
     
-    ObjCutin_SetSpellcardS3("Visage \"Death Coated in a Thick Mist\"", 240, 104, 104);
+    ObjCutin_SetSpellcardS3("Smoke Sign \"Enenra's Silk Road\"", 240, 104, 104);
     ObjCutin_LaunchS3(YABUSAME, bossCutIn, "Normal");
     ObjEnemyBossScene_StartSpell(bossScene);
 }
@@ -118,20 +120,25 @@ function angleToPlayer {
 task fire {
     wait(120);
     loop {
-        smokeCoat(72);
+        movement;
         wait(6);
     }
 }
 
-task smokeCoat(loopCount) {
-    ascent(i in 0..loopCount) {
-        let obj = CreateShotA1(bossX,bossY,4,i*(360/loopCount)+rand(0,360),255,30);
-        realShot(obj);
-    }
-    ascent(i in 0..loopCount/3) {
-        CreateShotA1(bossX,bossY,2,i*(360/loopCount)+rand(0,360),85,30);
-		wait(5);
-    }
+task smokeTrail {
+	while(ObjMove_GetSpeed(bossObj) > 0) {
+		let obj = CreateShotA1(bossX, bossY, 0, 90, 255, 30);
+		wait(120);
+	}
+}
+
+task movement {
+	wait(60);
+	while(!Obj_IsDeleted(bossObj)) {
+		ObjMove_SetDestAtWeight(bossObj,rand(10, GetStgFrameWidth - 10), rand(20, 200), 2, 5);
+		smokeTrail;
+		wait(360);
+	}
 }
 
 task realShot(obj) {

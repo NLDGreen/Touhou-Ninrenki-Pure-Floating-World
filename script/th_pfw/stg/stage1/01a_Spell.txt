@@ -1,5 +1,6 @@
 #TouhouDanmakufu[Single]
 #ScriptVersion[3]
+#System["script/th_pfw/system/System.dnh"]
 #Title["Stage 1 Midboss: Suwako (Lunatic Spell)"]
 #Text[""]
 

@@ -1,0 +1,5 @@
+#TouhouDanmakufu[Package]
+#Title["“Œ•û”E˜@‹L@` Pure Floating World."]
+#Image[""]
+#Text["ver 0.01a"]
+#Player[ "./player/Player_ReimuA.dnh", "./player/Player_ReimuB.dnh", "./player/Player_MarisaA.dnh", "./player/Player_MarisaB.dnh", "./player/Player_SanaeA.dnh", "./player/Player_SanaeB.dnh" ]
