@@ -18,7 +18,7 @@ let bossCutIn = GetCurrentScriptDirectory ~ "face07ct.png";
 
 #include "script/default_system/Default_ShotConst.txt"
 #include "script/default_system/Default_Effect.txt"
-#include "./Cutin/Cutin.txt"
+#include "script/th_pfw/lib/lib_boss.dnh"
 
 @Initialize {
 
@@ -26,7 +26,6 @@ let bossCutIn = GetCurrentScriptDirectory ~ "face07ct.png";
 
 	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
 	ObjEnemy_Regist(bossObj);
-	ObjMove_SetPosition(bossObj,192,-100);
 	ObjEnemy_SetDamageRate(bossObj, 10, 10);
 	ObjMove_SetDestAtSpeed(bossObj,192,100,5);
 	
@@ -69,7 +68,6 @@ function wait(w) { loop(w) {yield;} }
 
 task StartSpell {
 	let objEnemy = GetEnemyBossObjectID[0];
-	loop(90){yield;}
 	
 	ObjCutin_SetSpellcardS3("Ambush Sign \"Attack in the Rain\"", 240, 104, 104);
 	ObjCutin_LaunchS3(YABUSAME, bossCutIn, "Normal");

@@ -1,8 +1,8 @@
 #TouhouDanmakufu[Plural]
 #ScriptVersion[3]
 #System["script/th_pfw/system/System.dnh"]
-#Title["Vs. Garaiya Kaeruda"]
-#Text["Vs. Garaiya Kaeruda"]
+#Title["Vs. Suwako Moriya"]
+#Text["Vs. Suwako Moriya"]
 
 #include "script/th_pfw/lib/lib_boss.dnh"
 
@@ -24,11 +24,9 @@ task TPlural
 {
 	let dir = GetCurrentScriptDirectory();
 	let objEnemy = ObjEnemyBossScene_Create();
-	BossName(objEnemy, "Kaeruda Garaiya");
-	ObjEnemyBossScene_Add(objEnemy,0,dir ~ "01b_Attack1.txt");
-	ObjEnemyBossScene_Add(objEnemy,0,dir ~ "01b_Spell1.txt");
-	ObjEnemyBossScene_Add(objEnemy,1,dir ~ "01b_Attack2.txt");
-	ObjEnemyBossScene_Add(objEnemy,1,dir ~ "01b_Spell2.txt");
+	BossName(objEnemy, "Moriya Suwako");
+	ObjEnemyBossScene_Add(objEnemy,0,dir ~ "01a_Attack.dnh");
+	ObjEnemyBossScene_Add(objEnemy,0,dir ~ "01a_Spell.dnh");
 	ObjEnemyBossScene_LoadInThread(objEnemy);
 	ObjEnemyBossScene_Regist(objEnemy);
 

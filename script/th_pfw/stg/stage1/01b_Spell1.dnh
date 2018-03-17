@@ -1,22 +1,24 @@
 #TouhouDanmakufu[Single]
 #ScriptVersion[3]
 #System["script/th_pfw/system/System.dnh"]
-#Title["Garaiya Nonspell 2"]
-#Text[""]
+#Title["Garaiya Spell Card 1"]
+#Text["Frog Sign [A Hop, A Skip And A Jump] 蛙符「三段跳び」"]
 
 let youCanFireNow = 0;
 let suck = 0;
 let shotCount = 1;
 let count = 0;
 let bossObj;
+let bossScene = GetEnemyBossSceneObjectID();
 let bossX = 0;
 let bossY = 0;
-let speed;
 let imgBoss = GetCurrentScriptDirectory ~ "Yuyuko.png";
 let spellCardBackground = GetCurrentScriptDirectory ~ "Textures/Donald Trump.jpg";
+let bossCutIn = GetCurrentScriptDirectory ~ "face07ct.png";
 
 #include "script/default_system/Default_ShotConst.txt"
 #include "script/default_system/Default_Effect.txt"
+#include "script/th_pfw/lib/lib_SpellCard.dnh"
 
 @Initialize {
 
@@ -24,10 +26,11 @@ let spellCardBackground = GetCurrentScriptDirectory ~ "Textures/Donald Trump.jpg
 
 	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
 	ObjEnemy_Regist(bossObj);
-	ObjMove_SetPosition(bossObj,192,-100);
-
+	ObjEnemy_SetDamageRate(bossObj, 10, 10);
 	ObjMove_SetDestAtSpeed(bossObj,192,100,5);
-	
+
+	StartSpell;
+	scriptEnd;
 	mainTask;
 }
 
@@ -35,10 +38,13 @@ let spellCardBackground = GetCurrentScriptDirectory ~ "Textures/Donald Trump.jpg
 
 	alternative(GetEventType())
 	case(EV_REQUEST_LIFE) {
-		SetScriptResult(1500);
+		SetScriptResult(300);
 	}
 	case(EV_REQUEST_TIMER) {
 		SetScriptResult(60);
+	}
+	case(EV_REQUEST_SPELL_SCORE) {
+		SetScriptResult(25000000);
 	}
 }
 
@@ -60,10 +66,17 @@ let spellCardBackground = GetCurrentScriptDirectory ~ "Textures/Donald Trump.jpg
 
 function wait(w) { loop(w) {yield;} }
 
+task StartSpell {
+	let objEnemy = GetEnemyBossObjectID[0];
+
+	ObjCutin_SetSpellcardS3("Frog Sign \"A Hop, A Skip, and A Jump\"", 240, 104, 104);
+	ObjCutin_LaunchS3(YABUSAME, bossCutIn, "Normal");
+	ObjEnemyBossScene_StartSpell(bossScene);
+}
+
 task mainTask {
 	renderBoss;
 	fire;
-	scriptEnd;
 }
 
 task renderBG {
@@ -99,58 +112,89 @@ function angleToPlayer {
 	return dir
 
 }
-	
+
 task fire {
-    ObjEnemy_SetDamageRate(bossObj,10,10);
     let mirror = 1;
     wait(60);
+    loop(4) {
+    kunai(mirror);
+    wait(120);
+    mirror = mirror * -1;
+    }
+    shots(16);
     loop {
-    kunai(mirror, 12);
-    rain;
-    wait(9);
+    kunai(mirror);
+    wait(120);
     mirror = mirror * -1;
     }
 }
 
-task rain {
-    loop(2) {
-    CreateShotA1(rand(0,GetStgFrameWidth),0,3,90,45,30);
-    wait(5);
+task shots(loopCount) {
+	loop {
+		ascent(i in 0..loopCount) {
+			CreateShotA1(bossX,bossY,rand(2,2),rand(0,360),45,30);
+		}
+	wait(20);
+	}
+}
+
+task kunai(mirror) {
+    let count = 0;
+    loop(15) {
+    ascent(i in 0..10) {
+	if(mirror == 1) {
+        let obj = CreateShotA1(GetStgFrameWidth*0.06*i+count,0,6,90,76,30);
+        maiShots(obj,mirror);
+	}
+	if(mirror == -1) {
+	let obj = CreateShotA1(GetStgFrameWidth-(GetStgFrameWidth*0.06*i+count),0,6,90,76,30);
+        maiShots(obj,mirror);
+	}
+        }
+    wait(4);
+    count = count + 6;
     }
 }
 
-task kunai(mirror, loopCount) {
-    ascent(i in 0..loopCount) {
-        let angle = i*(360/loopCount)+count*3;
-        let obj = CreateShotA1(bossX, bossY, 3, angle, 76, 15);
-        maiShots(obj,mirror,angle);
-    }
-    count = count + 1.3;
-}
-
-task maiShots(obj,mirrorer,angle) {
+task maiShots(obj,mirrorer) {
+    wait(30);
     let mirror = 1;
-    loop(1) {
-    ObjMove_SetSpeed(obj,3);
+    loop(3) {
+    ObjMove_SetSpeed(obj,6);
     ascent(i in 0..90) {
-        ObjMove_SetSpeed(obj,6-i/12);
+        ObjMove_SetSpeed(obj,6-i/10);
         yield;
     }
     wait(30);
-    ObjMove_SetAngle(obj,ObjMove_GetAngle(obj)*mirror+180+count);
-    ascent(i in 0..100) {
-        speed = i * 0.02;
-        ObjMove_SetSpeed(obj, speed);
-        }
+    mirror = mirror * -1;
+    ObjMove_SetAngle(obj,90+30*mirror*mirrorer);
+    ObjMove_SetSpeed(obj,4);
     }
-    wait(180);
-    ObjEnemy_SetDamageRate(bossObj,100,100);
+    ObjMove_SetSpeed(obj,6);
+    ascent(i in 0..90) {
+        ObjMove_SetSpeed(obj,6-i/10);
+        yield;
+    }
+    wait(30);
+    mirror = mirror * -1;
+    ObjMove_SetAngle(obj,90);
+    ObjMove_SetAngularVelocity(obj,mirrorer*0.5);
+    ObjMove_SetSpeed(obj,4);
+}
+
+task laser {
+        CreateStraightLaserA1(ObjMove_GetX(GetPlayerObjectID),0,90,GetStgFrameHeight,10,12,156,60);
 }
 
 task scriptEnd {
 	while(ObjEnemy_GetInfo(bossObj,INFO_LIFE) > 0) {
 		yield;
 	}
+
+	if(ObjEnemyBossScene_GetInfo(bossScene, INFO_PLAYER_SHOOTDOWN_COUNT) + ObjEnemyBossScene_GetInfo(bossScene, INFO_PLAYER_SPELL_COUNT) == 0) {
+		AddScore(ObjEnemyBossScene_GetInfo(bossScene, INFO_SPELL_SCORE));
+	}
+
 	Obj_Delete(bossObj);
 	DeleteShotAll(TYPE_ALL,TYPE_ITEM);
 	CloseScript(GetOwnScriptID);

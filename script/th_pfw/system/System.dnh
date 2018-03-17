@@ -4,6 +4,7 @@ let lifeBarDir = "script/th_pfw/img/";
 
 @Initialize
 {
+	InstFont();
 	InitFrame();
 	TScore();
 	TGraze();
@@ -35,6 +36,17 @@ let lifeBarDir = "script/th_pfw/img/";
 		let score = ObjEnemyBossScene_GetInfo(objScene, INFO_SPELL_SCORE);
 		TGainSpell(score);
 	}
+}
+
+//----------------------------------------------------
+// Installing Fonts
+//----------------------------------------------------
+task InstFont()
+{
+	InstallFont(GetCurrentScriptDirectory() ~ "font/Russell Square Regular.ttf");
+	InstallFont(GetCurrentScriptDirectory() ~ "font/Aroania.ttf");
+	InstallFont(GetCurrentScriptDirectory() ~ "font/THBiolinum.otf");
+	InstallFont(GetCurrentScriptDirectory() ~ "font/Square721");
 }
 
 //----------------------------------------------------
@@ -310,7 +322,7 @@ task TBossLife{
 	ObjRender_SetScaleXYZ(objLife, -1, 1, 1);
 	ObjRender_SetScaleXYZ(objLife2, -1, 1, 1);
 	
-	ObjRender_SetPosition(objStar, 0, 10, 0);
+	ObjRender_SetPosition(objStar, 0, 12, 0);
 	
 	loop{
 		ObjSpriteList2D_ClearVertexCount(objStar);

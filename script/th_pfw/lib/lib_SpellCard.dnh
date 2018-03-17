@@ -236,7 +236,8 @@ task CutinS3(Type, mimage, difficulty){
 		
 		let SpellText = ObjText_Create;
 		ObjText_SetText(SpellText,SpellName);
-		ObjText_SetFontSize(SpellText,12);
+		ObjText_SetFontType(SpellText, "Touhou Biolinum");
+		ObjText_SetFontSize(SpellText,16);
 		ObjText_SetFontColorTop(SpellText,255,255,255);
 		ObjText_SetFontColorBottom(SpellText, Colors[0][0], Colors[0][1], Colors[0][2]);
 		ObjText_SetFontBorderType(SpellText,BORDER_FULL);
