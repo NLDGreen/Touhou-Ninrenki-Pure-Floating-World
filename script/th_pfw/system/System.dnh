@@ -1,6 +1,7 @@
 
 let dirCurrent = GetCurrentScriptDirectory();
 let lifeBarDir = "script/th_pfw/img/";
+let quality = 2;
 
 @Initialize
 {
@@ -454,48 +455,106 @@ task TBossLife{
 }
 
 //----------------------------------------------------
-// Boss Timer Display
+// Boss Timer Display, found in Lunarethic's system
 //----------------------------------------------------
 task TBossTimer
 {
-	let pathDigit = GetCurrentScriptDirectory() ~ "img/Default_SystemDigit.png";
-
+	let pathDigit = GetCurrentScriptDirectory() ~ "img/SystemDigit.png";
+	
 	let obj = ObjPrim_Create(OBJ_SPRITE_LIST_2D);
 	ObjPrim_SetTexture(obj, pathDigit);
-	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
-	Obj_SetRenderPriority(obj, 0.75);
-	ObjRender_SetY(obj, 0);
-	let count = 2;
-
+	ObjRender_SetBlendType(obj, BLEND_ALPHA);
+	Obj_SetRenderPriority(obj, 0.80);
+	
+	let ypos = 8;
+	let yielder = 0;
+	let grow = 0;
+	let count = 4;
+	let maxt = 99.99;
+	let scale = 1;
+	let fade = 0;
+	let bosstime = truncate(maxt);
+	let cyoff = 0;
+	let posinc = 0;
+	if(quality<=1){cyoff = 12}
+	
 	let objScene = ID_INVALID;
-	loop
-	{
-		objScene = GetEnemyBossSceneObjectID();
+	let x = (GetStgFrameWidth/2)-( (6+(count-1) * (14*scale))/2) + 30-32;
+	while(GetCommonData("quality", 2)==quality){
+		x = (GetStgFrameWidth/2)-( (6+(count-1) * (14*scale))/2) + 30-32;
+		
+		objScene = GetEnemyBossSceneObjectID;
 		ObjSpriteList2D_ClearVertexCount(obj);
-		if(objScene != ID_INVALID)
-		{
-			RenderTimer();
-		}
+		if(objScene != ID_INVALID){
+			fade = min(fade+0.05, 1);
+			RenderTimer;
+			SpellTime(objScene);
+			if(	ObjEnemyBossScene_GetInfo(objScene, INFO_IS_SPELL) ||
+				ObjEnemyBossScene_GetInfo(objScene, INFO_IS_LAST_SPELL) ||
+				ObjEnemyBossScene_GetInfo(objScene, INFO_IS_DURABLE_SPELL)){
+					if(yielder>25){
+						posinc = max(posinc+0.05, 0);
+						ypos = min(max(ypos, 6+cyoff)+posinc, 34+cyoff);	
+					}
+					yielder++;
+			}else{
+					posinc = min(posinc-0.05, 0);
+					ypos = max(min(ypos, 34+cyoff)+posinc, 6+cyoff);		
+					yielder = 0;
+			}
+		}else{fade = 0;ypos = 6;}
+		ObjRender_SetAlpha(obj, min(255*fade, 255));
+		ObjRender_SetY(obj, ypos+24-16);
+		
 		yield;
 	}
+	Obj_Delete(obj);
 
-	function RenderTimer()
-	{
-		let timer = ObjEnemyBossScene_GetInfo(objScene, INFO_TIMER);
-		timer = min(timer, 99);
+	function RenderTimer{
+		let timer = ObjEnemyBossScene_GetInfo(objScene, INFO_TIMERF)/60;
+		if(timer < 0){timer = 100;}
+		timer = min(max(0, timer), maxt);
+		timer *= 100;
+		
 		let listNum = DigitToArray(timer, count);
-
-		ObjSpriteList2D_ClearVertexCount(obj);
-		ascent(iObj in 0 .. count)
-		{
+		
+		ascent(iObj in 0 .. count-2){
 			let num = listNum[iObj];
-			ObjRender_SetX(obj, 352 + iObj * 14);
-			ObjSpriteList2D_SetSourceRect(obj, num * 36, 0, (num + 1) * 36, 32);
-			ObjSpriteList2D_SetDestRect(obj, 0, 0, 16, 24);
+			ObjRender_SetX(obj, x + (iObj-grow/20) * (12+grow));
+			ObjSpriteList2D_SetSourceRect(obj, num * 16, 0, (num + 1) * 16, 20);
+			ObjSpriteList2D_SetDestRect(obj, -grow, 0, 16, 20+grow);
 			ObjSpriteList2D_AddVertex(obj);
 		}
+		
+		ObjRender_SetX(obj, x + (count-2) * 12 - 2);
+		ObjSpriteList2D_SetSourceRect(obj, 11 * 16, 0, (11 + 1) * 16, 20);
+		ObjSpriteList2D_SetDestRect(obj, 0, 0, 16, 20);
+		ObjSpriteList2D_AddVertex(obj);
+		
+		ascent(iObj in count-2 .. count){
+			let num = listNum[iObj];
+			ObjRender_SetX(obj, x + 13 + iObj * 9);
+			ObjSpriteList2D_SetSourceRect(obj, num * 16, 0, (num + 1) * 16, 20);
+			ObjSpriteList2D_SetDestRect(obj, 0, 5, 12, 20);
+			ObjSpriteList2D_AddVertex(obj);
+		}
+		
+		
+		yield;
+		
 	}
-
+	task SpellTime(SpellTimeSceneObjectID){
+		let GetTimer = ObjEnemyBossScene_GetInfo(SpellTimeSceneObjectID, INFO_TIMER);
+		// if(bosstime != GetTimer && GetTimer <11){
+			// if(GetTimer > 4){grow = 6;PlaySound("Timeout",90,0);}
+			// if(GetTimer < 5 && GetTimer>-0.99){grow = 8;PlaySound("Timeout2",90,0);}
+			// bosstime = GetTimer;
+		// }
+		if(GetTimer<=10){
+			ObjRender_SetColor(obj, 255, 100-grow*8, 100-grow*8);
+		}else{ObjRender_SetColor(obj, 255, 255, 255);}
+		grow = max(grow-1, 0);
+	}
 }
 
 //----------------------------------------------------

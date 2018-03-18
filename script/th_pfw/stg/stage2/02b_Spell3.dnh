@@ -1,0 +1,165 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#System["script/th_pfw/system/System.dnh"]
+#Title["Kekuro Spell Card 3"]
+#Text["E/N: Smoke Sign \"Road of the Lightweight Cloth\" 煙符「煙々羅の道」 [r] H/L: Smoke Sign \"Enenra's Silk Road\" 煙符「煙々羅シルクロード」"]
+
+let youCanFireNow = 0;
+let suck = 0;
+let shotCount = 1;
+let count = 0;
+let bossObj;
+let bossScene = GetEnemyBossSceneObjectID();
+let bossX = 0;
+let bossY = 0;
+let imgBoss = GetCurrentScriptDirectory ~ "Yuyuko.png";
+let spellCardBackground = GetCurrentScriptDirectory ~ "Textures/Donald Trump.jpg";
+let bossCutIn = GetCurrentScriptDirectory ~ "face07ct.png";
+
+#include "script/default_system/Default_ShotConst.txt"
+#include "script/default_system/Default_Effect.txt"
+#include "script/th_pfw/lib/lib_boss.dnh"
+
+@Initialize {
+
+	SetAutoDeleteObject(true);
+
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+	ObjMove_SetPosition(bossObj,192,-100);
+	ObjEnemy_SetDamageRate(bossObj, 10, 10);
+	ObjMove_SetDestAtSpeed(bossObj,192,100,5);
+	BossName(bossObj, "Kemuri Kekuro");
+
+	StartSpell;
+	scriptEnd;
+	mainTask;
+}
+
+@Event {
+
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE) {
+		SetScriptResult(300);
+	}
+	case(EV_REQUEST_TIMER) {
+		SetScriptResult(60);
+	}
+	case(EV_REQUEST_SPELL_SCORE) {
+		SetScriptResult(2000000);
+	}
+}
+
+@MainLoop {
+
+	bossX = ObjMove_GetX(bossObj);
+	bossY = ObjMove_GetY(bossObj);
+
+	ObjEnemy_SetIntersectionCircleToShot(bossObj,bossX,bossY,24);
+	ObjEnemy_SetIntersectionCircleToPlayer(bossObj,bossX,bossY,32);
+
+	yield;
+
+}
+
+@Finalize {
+
+}
+
+function wait(w) { loop(w) {yield;} }
+
+task StartSpell {
+    let objEnemy = GetEnemyBossObjectID[0];
+	loop(90){yield;}
+    
+    ObjCutin_SetSpellcardS3("Smoke Sign \"Enenra's Silk Road\"", 240, 104, 104);
+    ObjCutin_LaunchS3(YABUSAME, bossCutIn, "Normal");
+    ObjEnemyBossScene_StartSpell(bossScene);
+}
+
+task mainTask {
+    renderBoss;
+    fire;
+    scriptEnd;
+}
+
+task renderBG {
+
+}
+
+task renderBoss {
+
+    let dir;
+    let speed;
+
+    ObjPrim_SetTexture(bossObj,imgBoss);
+    ObjSprite2D_SetSourceRect(bossObj,0,0,224,200);
+    ObjSprite2D_SetDestCenter(bossObj);
+    ObjRender_SetScaleXYZ(bossObj,0.4,0.4,0);
+
+    while(!Obj_IsDeleted(bossObj)) {
+
+        dir = ObjMove_GetAngle(bossObj);
+        speed = ObjMove_GetSpeed(bossObj);
+
+        if (speed == 0) { ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+        else if (cos(dir) < 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+        else if (cos(dir) > 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,180,0); }
+        yield;
+    }
+
+}
+
+function angleToPlayer {
+
+    let dir = atan2(GetPlayerY-bossY,GetPlayerX-bossX);
+    return dir
+
+}
+    
+task fire {
+    wait(120);
+    loop {
+        movement;
+        wait(6);
+    }
+}
+
+task smokeTrail {
+	while(ObjMove_GetSpeed(bossObj) > 0) {
+		let obj = CreateShotA1(bossX, bossY, 0, 90, 255, 30);
+		wait(120);
+	}
+}
+
+task movement {
+	wait(60);
+	while(!Obj_IsDeleted(bossObj)) {
+		ObjMove_SetDestAtWeight(bossObj,rand(10, GetStgFrameWidth - 10), rand(20, 200), 2, 5);
+		smokeTrail;
+		wait(360);
+	}
+}
+
+task realShot(obj) {
+    loop(200) {
+        if(GetObjectDistance(obj,GetPlayerObjectID) < 120){Obj_Delete(obj);}
+        yield;
+    }
+    Obj_Delete(obj);
+}
+
+task scriptEnd {
+	while(ObjEnemy_GetInfo(bossObj,INFO_LIFE) > 0) {
+		yield;
+	}
+
+	if(ObjEnemyBossScene_GetInfo(bossScene, INFO_PLAYER_SHOOTDOWN_COUNT) + ObjEnemyBossScene_GetInfo(bossScene, INFO_PLAYER_SPELL_COUNT) == 0) {
+		AddScore(ObjEnemyBossScene_GetInfo(bossScene, INFO_SPELL_SCORE));
+	}
+
+	Obj_Delete(bossObj);
+	DeleteShotAll(TYPE_ALL,TYPE_ITEM);
+	CloseScript(GetOwnScriptID);
+
+}

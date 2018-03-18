@@ -277,8 +277,8 @@ task CutinS3(Type, mimage, difficulty){
 		loop(40){yield;}
 		let mov = 0;
 		
-		if(Type == "MOKOU"){SpellcardDeclareMovement([ObjRender_GetY(SpellText), 48+32*num, 0.175, 9]);loop(60){yield;}}
-		else{RegularSpellCardDeclare([ObjRender_GetY(SpellText), 32+32*num, 0.135, 12]);}
+		if(Type == "MOKOU"){SpellcardDeclareMovement([ObjRender_GetY(SpellText), 48+12*num, 0.175, 9]);loop(60){yield;}}
+		else{RegularSpellCardDeclare([ObjRender_GetY(SpellText), 12+12*num, 0.135, 12]);}
 		//32 is the offset from the top of the screen
 		//If using a system where the lifebar is on the boss rather than the top of the screen, 12 is a good value
 
