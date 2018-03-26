@@ -1,0 +1,42 @@
+#TouhouDanmakufu[Plural]
+#ScriptVersion[3]
+#System["script/th_pfw/system/System.dnh"]
+#Title["Vs. Enra Tabakomori"]
+#Text["Vs. Enra Tabakomori"]
+
+#include "script/th_pfw/lib/lib_boss.dnh"
+
+@Initialize
+{
+	TPlural();
+	SetPlayerLife(10);
+	yield;
+}
+@MainLoop
+{
+}
+
+@Finalize
+{
+}
+
+task TPlural
+{
+	let dir = GetCurrentScriptDirectory();
+	let objEnemy = ObjEnemyBossScene_Create();
+	BossName(objEnemy, "Tabakomori Enra");
+	ObjEnemyBossScene_Add(objEnemy,0,dir ~ "02b_Attack1.dnh");
+	ObjEnemyBossScene_Add(objEnemy,0,dir ~ "02b_Spell1.dnh");
+	ObjEnemyBossScene_Add(objEnemy,1,dir ~ "02b_Attack2.dnh");
+	ObjEnemyBossScene_Add(objEnemy,1,dir ~ "02b_Spell2.dnh");
+	ObjEnemyBossScene_Add(objEnemy,2,dir ~ "02b_Spell3.dnh");
+	ObjEnemyBossScene_LoadInThread(objEnemy);
+	ObjEnemyBossScene_Regist(objEnemy);
+
+	while (!Obj_IsDeleted(objEnemy))
+	{
+	yield;
+	}
+
+	CloseScript(GetOwnScriptID());
+}

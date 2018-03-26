@@ -1,8 +1,7 @@
 #TouhouDanmakufu[Single]
 #ScriptVersion[3]
-#System["script/th_pfw/system/System.dnh"]
-#Title["Enra Spell Card 1"]
-#Text["Visage \"Death Coated in Fog\" éãäEÅuñ∂Ç≈ï¢ÇÌÇÍÇΩéÄÅv"]
+#Title["Enra Nonspell 1"]
+#Text[""]
 
 let youCanFireNow = 0;
 let suck = 0;
@@ -13,8 +12,6 @@ let bossScene = GetEnemyBossSceneObjectID();
 let bossX = 0;
 let bossY = 0;
 let imgBoss = GetCurrentScriptDirectory ~ "Yuyuko.png";
-let spellCardBackground = GetCurrentScriptDirectory ~ "Textures/Donald Trump.jpg";
-let bossCutIn = GetCurrentScriptDirectory ~ "face07ct.png";
 
 #include "script/default_system/Default_ShotConst.txt"
 #include "script/default_system/Default_Effect.txt"
@@ -26,11 +23,10 @@ let bossCutIn = GetCurrentScriptDirectory ~ "face07ct.png";
 
 	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
 	ObjEnemy_Regist(bossObj);
+	ObjMove_SetPosition(bossObj,192,-100);
 	ObjEnemy_SetDamageRate(bossObj, 10, 10);
 	ObjMove_SetDestAtSpeed(bossObj,192,100,5);
-	BossName(bossObj, "Tabakomori Enra");
 
-	StartSpell;
 	scriptEnd;
 	mainTask;
 }
@@ -66,15 +62,6 @@ let bossCutIn = GetCurrentScriptDirectory ~ "face07ct.png";
 }
 
 function wait(w) { loop(w) {yield;} }
-
-task StartSpell {
-    let objEnemy = GetEnemyBossObjectID[0];
-	loop(90){yield;}
-    
-    ObjCutin_SetSpellcardS3("Visage \"Death Coated in a Thick Mist\"", 240, 104, 104);
-    ObjCutin_LaunchS3(YABUSAME, bossCutIn, "Normal");
-    ObjEnemyBossScene_StartSpell(bossScene);
-}
 
 task mainTask {
     renderBoss;

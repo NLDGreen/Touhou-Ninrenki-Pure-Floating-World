@@ -1,7 +1,7 @@
 #TouhouDanmakufu[Single]
 #ScriptVersion[3]
 #System["script/th_pfw/system/System.dnh"]
-#Title["Kekuro Spell Card 2"]
+#Title["Enra Spell Card 2"]
 #Text["E/N: Smoke Sign \"Road of the Lightweight Cloth\" 煙符「煙々羅の道」 [r] H/L: Smoke Sign \"Enenra's Silk Road\" 煙符「煙々羅シルクロード」"]
 
 let youCanFireNow = 0;
@@ -29,7 +29,7 @@ let bossCutIn = GetCurrentScriptDirectory ~ "face07ct.png";
 	ObjMove_SetPosition(bossObj,192,-100);
 	ObjEnemy_SetDamageRate(bossObj, 10, 10);
 	ObjMove_SetDestAtSpeed(bossObj,192,100,5);
-	BossName(bossObj, "Kemuri Kekuro");
+	BossName(bossObj, "Tabakomori Enra");
 
 	StartSpell;
 	scriptEnd;

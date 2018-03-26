@@ -55,7 +55,7 @@ task InstFont()
 //----------------------------------------------------
 function InitFrame()
 {
-	let path = GetCurrentScriptDirectory() ~ "img/Default_SystemBackground.png";
+	let path = GetCurrentScriptDirectory() ~ "img/PFW_SystemBackground.png";
 	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
 	ObjPrim_SetTexture(obj, path);
 	Obj_SetRenderPriority(obj, 0);

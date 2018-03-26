@@ -1,0 +1,230 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Proof of Concept"]
+#Text["A  proof of concept idea by Ultroloth, interpreted by Sevil Natas."]
+
+let youCanFireNow = 0;
+let suck = 0;
+let shotCount = 1;
+let mirror = 1;
+let count = 0;
+let bossObj;
+let bossX = 0;
+let bossY = 0;
+let imgBoss = GetCurrentScriptDirectory ~ "Yuyuko.png";
+let spellCardBackground = GetCurrentScriptDirectory ~ "Textures/Donald Trump.jpg";
+
+#include "script/default_system/Default_ShotConst.txt"
+
+@Initialize {
+
+	SetAutoDeleteObject(true);
+
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+	ObjMove_SetPosition(bossObj,192,-100);
+
+	ObjMove_SetDestAtSpeed(bossObj,192,100,5);
+
+	mainTask;
+}
+
+@Event {
+
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE) {
+		SetScriptResult(4500);
+	}
+	case(EV_REQUEST_TIMER) {
+		SetScriptResult(60);
+	}
+
+}
+
+@MainLoop {
+
+	bossX = ObjMove_GetX(bossObj);
+	bossY = ObjMove_GetY(bossObj);
+
+	ObjEnemy_SetIntersectionCircleToShot(bossObj,bossX,bossY,24);
+	ObjEnemy_SetIntersectionCircleToPlayer(bossObj,bossX,bossY,32);
+
+	yield;
+
+}
+
+@Finalize {
+
+}
+
+function wait(w) { loop(w) {yield;} }
+
+task mainTask {
+	renderBoss;
+	fire;
+	scriptEnd;
+}
+
+task renderBG {
+
+}
+
+task renderBoss {
+
+	let dir;
+	let speed;
+
+	ObjPrim_SetTexture(bossObj,imgBoss);
+	ObjSprite2D_SetSourceRect(bossObj,0,0,224,200);
+	ObjSprite2D_SetDestCenter(bossObj);
+	ObjRender_SetScaleXYZ(bossObj,0.4,0.4,0);
+
+	while(!Obj_IsDeleted(bossObj)) {
+
+		dir = ObjMove_GetAngle(bossObj);
+		speed = ObjMove_GetSpeed(bossObj);
+
+		if (speed == 0) { ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+		else if (cos(dir) < 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+		else if (cos(dir) > 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,180,0); }
+		yield;
+	}
+
+}
+
+function angleToPlayer {
+
+	let dir = atan2(GetPlayerY-bossY,GetPlayerX-bossX);
+	return dir
+
+}
+	
+task fire {
+	wait(60);
+	fodderShots(8);
+	suckingShots(8);
+}
+
+task fodderShots(loopCount) {
+	loop {
+	if(youCanFireNow == 1) {
+	loop(loopCount) {
+		let obj = CreateShotA2(rand(0,GetStgFrameWidth),GetStgFrameHeight+5,rand(1,1.7),rand(260,280),0,6,7,0);
+		fodderDeclaration(obj);
+	}
+	wait(15);
+	}
+	yield;
+	}
+
+}
+
+task fodderDeclaration(obj) {
+	loop {
+		if(suck == 1){
+			ObjMove_SetAngle(obj,atan2(ObjMove_GetY(bossObj)-ObjMove_GetY(obj),ObjMove_GetX(bossObj)-ObjMove_GetX(obj)));
+			ObjMove_SetAcceleration(obj,0.1);
+			loop {
+				if(GetObjectDistance(bossObj,obj) < 5) {Obj_Delete(obj);}
+				yield;
+			}
+		}
+	yield;
+	}
+}
+
+task suckingShots(loopCount) {
+	loop {
+		youCanFireNow = 1;
+		wait(240);
+		youCanFireNow = 0;
+		suck = 1;
+		ascent(i in 0..60) {
+			let charge = CreateShotA1(bossX,bossY,0,0,171,i/4);
+			yield;
+			Obj_Delete(charge);
+		}
+		suck = 0;
+		loop(1) {
+		ascent(i in 0..loopCount) {
+			let orb = CreateShotA2(bossX,bossY,3,i*(360/loopCount),0,12,171,30);
+			let orbRev = CreateShotA2(bossX,bossY,3,i*(360/loopCount),0,12,171,30);
+			shotCeption(orb);
+			shotCeptionRev(orbRev);
+		}
+		wait(12);
+		}
+	wait(180);
+	}
+}
+
+task shotCeption(obj) {
+	ObjMove_SetAcceleration(obj,-0.1);
+	ObjMove_SetAngularVelocity(obj,9);
+	wait(60);
+	ObjMove_SetSpeed(obj,0);
+	ObjMove_SetAcceleration(obj,0.4);
+	ObjMove_SetAngularVelocity(obj,2);
+	while(!Obj_IsDeleted(obj)) {
+		loop(4) {
+		let instantDelete = CreateShotA1(ObjMove_GetX(obj),ObjMove_GetY(obj),0,0,15,30);
+		Delete(instantDelete);
+		yield;
+		}
+	let delayedShot = CreateShotA1(ObjMove_GetX(obj),ObjMove_GetY(obj),3,ObjMove_GetAngle(obj)+rand(-45,45),15,30);
+	delayingShot(delayedShot);
+	disclaimerLaser(delayedShot);
+	}
+}
+
+task shotCeptionRev(obj) {
+	ObjMove_SetAcceleration(obj,-0.2);
+	ObjMove_SetAngularVelocity(obj,-9);
+	wait(60);
+	ObjMove_SetSpeed(obj,0);
+	ObjMove_SetAcceleration(obj,0.4);
+	ObjMove_SetAngularVelocity(obj,-2);
+	while(!Obj_IsDeleted(obj)) {
+		loop(4) {
+		let instantDelete = CreateShotA1(ObjMove_GetX(obj),ObjMove_GetY(obj),0,0,15,30);
+		Delete(instantDelete);
+		yield;
+		}
+	let delayedShot = CreateShotA1(ObjMove_GetX(obj),ObjMove_GetY(obj),3,ObjMove_GetAngle(obj)+rand(-45,45),15,30);
+	delayingShot(delayedShot);
+	disclaimerLaser(delayedShot);
+	}
+}
+
+task disclaimerLaser(obj) {
+	wait(90);
+	while(!Obj_IsDeleted(obj)) {
+		let laser = CreateStraightLaserA1(ObjMove_GetX(obj),ObjMove_GetY(obj),ObjMove_GetAngle(obj),900,15,0,156,60);
+		yield;
+		Obj_Delete(laser);
+	}
+}
+
+task delayingShot(obj) {
+	ObjMove_SetSpeed(obj,0);
+	wait(90);
+	ascent(i in 0..150) {
+	ObjMove_SetSpeed(obj,0.0375*i);
+	yield;
+	}
+}
+
+task Delete(obj) {
+	wait(30);
+	Obj_Delete(obj);
+}
+
+task scriptEnd {
+	while(ObjEnemy_GetInfo(bossObj,INFO_LIFE) > 0) {
+		yield;
+	}
+	Obj_Delete(bossObj);
+	DeleteShotAll(TYPE_ALL,TYPE_ITEM);
+	CloseScript(GetOwnScriptID);
+
+}
