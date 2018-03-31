@@ -1,0 +1,59 @@
+ function wait(let frames){
+     loop(frames){yield;}
+ }
+
+ function WaitForZeroEnemy{
+     while(length(GetAllEnemyID()) > 0){yield;}
+ }
+
+ function GetCenterX{
+     return GetStgFrameWidth/2;
+ }
+
+ function GetCenterY{
+     return GetStgFrameHeight/2;
+ }
+
+ function rand_int(min, max){
+     return round(rand(min, max))
+ }
+
+ function sec(n) { return 1/cos(n); }
+ function csc(n) { return 1/sin(n); }
+ function cot(n) { return 1/tan(n); }
+
+ function GetAtanAngle(obj,obj2){
+     let angle=atan2(ObjMove_GetY(obj2)-ObjMove_GetY(obj),ObjMove_GetX(obj2)-ObjMove_GetX(obj));
+     return angle;
+ }
+
+ function GetPointAngle(x1,y1,x2,y2){
+     let angle=atan2(y1-y2,x1-x2);
+     return angle;
+ }
+
+ function GetDistance(x1,y1,x2,y2){
+     return(((x2-x1)^2+(y2-y1)^2)^(1/2));
+ }
+
+ function DelaySE(sfx, time){//Assumes that sfx is the path of a loaded sound effect.
+   loop(time){
+     yield;
+   }
+   PlaySE(sfx);
+ }
+ 
+ // Only use the following task for Boss Single Scripts
+ task SetDamageRateAtFrame(obj, shot, bomb, frame) {//Talos
+   ObjEnemy_SetDamageRate(obj, 0, 0);
+   let time = frame;
+   while(IsPlayerSpellActive) { //Prevents Bomb Damage from previous attack
+     time--;
+     yield;
+   }
+   while(time > 0){
+     time--;
+     yield;
+   }
+   ObjEnemy_SetDamageRate(obj, shot, bomb);
+ }

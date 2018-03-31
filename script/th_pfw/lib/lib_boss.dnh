@@ -11,12 +11,11 @@ task BossName(bossObj, bossId) {
 	Obj_SetRenderPriority(name, 0.7);
 	ObjRender_SetScaleXYZ(name, 1, 1, 1);
 	ObjSpriteList2D_SetSourceRect(name, 0, 16 * bossId, 128, 16 * (bossId + 1));
+	ObjSpriteList2D_SetDestCenter(name);
+	ObjRender_SetPosition(name, 2, 2, 0);
 	ObjRender_SetBlendType(name, BLEND_ALPHA);
 	
 	let alpha = 255;
-	
-	//ObjSprite2D_SetDestCenter(name);
-	ObjRender_SetPosition(name, 0, 0, 0);
 	
 	while (!Obj_IsDeleted(bossObj)) {
 		if(GetPlayerY > 80 && alpha < 255){alpha += 10;}

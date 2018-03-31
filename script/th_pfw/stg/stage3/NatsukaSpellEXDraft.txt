@@ -1,0 +1,145 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Stage 3 Boss: Natsuka (Spell EX)"]
+#Text[""]
+
+let count = 0;
+let bossObj;
+let bossX = 0;
+let bossY = 0;
+let speed;
+let imgBoss = GetCurrentScriptDirectory ~ "Yuyuko.png";
+
+#include "script/default_system/Default_ShotConst.txt"
+#include "script/default_system/Default_Effect.txt"
+
+@Initialize {
+
+	SetAutoDeleteObject(true);
+
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+	ObjMove_SetPosition(bossObj,192,-100);
+
+	ObjMove_SetDestAtSpeed(bossObj,192,100,5);
+	
+	mainTask;
+}
+
+@Event {
+
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE) {
+		SetScriptResult(1800);
+	}
+	case(EV_REQUEST_TIMER) {
+		SetScriptResult(60);
+	}
+}
+
+@MainLoop {
+
+	bossX = ObjMove_GetX(bossObj);
+	bossY = ObjMove_GetY(bossObj);
+
+	ObjEnemy_SetIntersectionCircleToShot(bossObj,bossX,bossY,24);
+	ObjEnemy_SetIntersectionCircleToPlayer(bossObj,bossX,bossY,32);
+
+	yield;
+
+}
+
+@Finalize {
+
+}
+
+function wait(w) { loop(w) {yield;} }
+
+task mainTask {
+	renderBoss;
+	fire;
+	scriptEnd;
+}
+
+task renderBoss {
+
+	let dir;
+	let speed;
+
+	ObjPrim_SetTexture(bossObj,imgBoss);
+	ObjSprite2D_SetSourceRect(bossObj,0,0,224,200);
+	ObjSprite2D_SetDestCenter(bossObj);
+	ObjRender_SetScaleXYZ(bossObj,0.4,0.4,0);
+
+	while(!Obj_IsDeleted(bossObj)) {
+
+		dir = ObjMove_GetAngle(bossObj);
+		speed = ObjMove_GetSpeed(bossObj);
+
+		if (speed == 0) { ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+		else if (cos(dir) < 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+		else if (cos(dir) > 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,180,0); }
+		yield;
+	}
+
+}
+
+function angleToPlayer {
+
+	let dir = atan2(GetPlayerY-bossY,GetPlayerX-bossX);
+	return dir
+
+}
+
+task fire {
+	wait(60);
+	ascent(i in 0..((GetStgFrameWidth-22)/8)) {
+		CreateStraightLaserA1(i*4,0,90,GetStgFrameHeight+15,15,15,155,45);
+		CreateStraightLaserA1(GetStgFrameWidth-i*4,0,90,GetStgFrameHeight+15,15,15,157,45);
+		yield;
+	}
+	wait(60);
+	playerEdit;
+	loop(45) {
+	count = count + 1;
+	yield;
+	}
+	centreShots;
+	loop {
+		loop(180) {
+			count = count + 1;
+			yield;
+		}
+	}
+}
+
+task centreShots {
+	loop {
+		CreateShotA1(0,0,3,atan2(GetPlayerY,GetPlayerX),91,30);
+		CreateShotA1(GetStgFrameWidth,0,3,atan2(GetPlayerY,GetPlayerX-GetStgFrameWidth),91,30);
+		CreateShotA1(0,GetStgFrameHeight,3,atan2(GetPlayerY-GetStgFrameHeight,GetPlayerX),91,30);
+		CreateShotA1(GetStgFrameWidth,GetStgFrameHeight,3,atan2(GetPlayerY-GetStgFrameHeight,GetPlayerX-GetStgFrameWidth),91,30);
+		wait(15);
+	}
+}
+
+task objEdit(obj) {
+	ObjMove_SetAngularVelocity(obj,-0.1*sin(count));
+}
+
+task playerEdit {
+	loop {
+		ObjMove_SetX(GetPlayerObjectID,GetStgFrameWidth/2+GetStgFrameWidth/2*sin(count));
+		yield;
+	}
+}
+
+task scriptEnd {
+	while(ObjEnemy_GetInfo(bossObj,INFO_LIFE) > 0) {
+		yield;
+	}
+	Obj_Delete(bossObj);
+	DeleteShotAll(TYPE_ALL,TYPE_ITEM);
+	CloseScript(GetOwnScriptID);
+
+}

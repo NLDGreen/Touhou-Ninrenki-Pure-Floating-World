@@ -8,11 +8,12 @@ let GCSD = GetCurrentScriptDirectory();
 let objEnemy = ObjEnemyBossScene_Create();
 
 #include "script/th_pfw/lib/lib_boss.dnh"
+#include "script/th_pfw/lib/lib_constant.dnh"
 
 @Initialize
 {
-	TPlural();
 	BossName(objEnemy, BOSS_GARAIYA);
+	TPlural();
 	SetPlayerLife(10);
 	yield;
 }
