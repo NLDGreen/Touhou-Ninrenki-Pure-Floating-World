@@ -6,12 +6,12 @@ let nameImg = dir ~ "ename.png";
 
 
 task BossName(bossObj, bossId) {
-	let name = ObjPrim_Create(OBJ_SPRITE_LIST_2D);
+	let name = ObjPrim_Create(OBJ_SPRITE_2D);
 	ObjPrim_SetTexture(name, nameImg);
 	Obj_SetRenderPriority(name, 0.7);
 	ObjRender_SetScaleXYZ(name, 1, 1, 1);
-	ObjSpriteList2D_SetSourceRect(name, 0, 16 * bossId, 128, 16 * (bossId + 1));
-	ObjSpriteList2D_SetDestCenter(name);
+	ObjSprite2D_SetSourceRect(name, 0, 16 * bossId, 128, 16 * (bossId + 1));
+	ObjSprite2D_SetDestRect(name, 0, 0, 128, 16);
 	ObjRender_SetPosition(name, 2, 2, 0);
 	ObjRender_SetBlendType(name, BLEND_ALPHA);
 	
@@ -25,26 +25,4 @@ task BossName(bossObj, bossId) {
 	}
 	
 	Obj_Delete(name);
-	
-	// let objText = ObjText_Create();
-	// let alpha = 255;
-	
-	// ObjText_SetText(objText, bossName);
-	// ObjText_SetFontType(objText, "Russell Square Regular");
-	// ObjText_SetFontSize(objText, 14);
-	// ObjText_SetFontColorTop(objText, 100, 255, 100);
-    // ObjText_SetFontColorBottom(objText, 100, 255, 100);
-    // ObjText_SetFontBorderType(objText, BORDER_SHADOW);
-	// ObjText_SetFontBorderColor(objText, 0, 0, 0);
-	// ObjText_SetFontBorderWidth(objText, 1);
-	// ObjRender_SetPosition(objText, 2, 2, 0);
-	// Obj_SetRenderPriority(objText, 0.7);
-	
-	// while(!Obj_IsDeleted(bossObj)){
-		// if(GetPlayerY > 80 && alpha < 255){alpha += 10;}
-		// if(GetPlayerY <= 80 && alpha > 100){alpha -= 10;}
-		// ObjRender_SetAlpha(objText, alpha);
-		// yield;
-	// }
-	// Obj_Delete(objText);
 }

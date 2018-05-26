@@ -33,7 +33,8 @@ task TPlural
 	ObjEnemyBossScene_Add(objEnemy,1,GCSD ~ "01b_Spell2.dnh");
 	ObjEnemyBossScene_LoadInThread(objEnemy);
 	ObjEnemyBossScene_Regist(objEnemy);
-
+	
+	
 	while (!Obj_IsDeleted(objEnemy))
 	{
 	yield;

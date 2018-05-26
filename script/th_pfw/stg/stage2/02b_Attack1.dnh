@@ -27,6 +27,7 @@ let imgBoss = GetCurrentScriptDirectory ~ "Yuyuko.png";
 	ObjEnemy_SetDamageRate(bossObj, 10, 10);
 	ObjMove_SetDestAtSpeed(bossObj,192,100,5);
 
+	ObjSound_Play(renderBGM);
 	scriptEnd;
 	mainTask;
 }
@@ -62,6 +63,15 @@ let imgBoss = GetCurrentScriptDirectory ~ "Yuyuko.png";
 }
 
 function wait(w) { loop(w) {yield;} }
+
+function renderBGM {
+	let obj = ObjSound_Create();
+	ObjSound_Load(obj, "./../bgm/stg2.ogg");
+	ObjSound_SetSoundDivision(obj, SOUND_BGM);
+	ObjSound_SetLoopEnable(obj, true);
+	ObjSound_SetLoopTime(obj, 9.604, 124.798);
+	return obj;
+}
 
 task mainTask {
     renderBoss;

@@ -4,6 +4,9 @@
 #Title["Vs. Suwako Moriya"]
 #Text["Vs. Suwako Moriya"]
 
+let GCSD = GetCurrentScriptDirectory();
+let objEnemy = ObjEnemyBossScene_Create();
+
 #include "script/th_pfw/lib/lib_boss.dnh"
 
 @Initialize
@@ -22,14 +25,12 @@
 
 task TPlural
 {
-	let dir = GetCurrentScriptDirectory();
-	let objEnemy = ObjEnemyBossScene_Create();
-	BossName(objEnemy, "Moriya Suwako");
-	ObjEnemyBossScene_Add(objEnemy,0,dir ~ "01a_Attack.dnh");
-	ObjEnemyBossScene_Add(objEnemy,0,dir ~ "01a_Spell.dnh");
+	ObjEnemyBossScene_Add(objEnemy,0,GCSD ~ "01a_Attack.dnh");
+	ObjEnemyBossScene_Add(objEnemy,0,GCSD ~ "01a_Spell.dnh");
 	ObjEnemyBossScene_LoadInThread(objEnemy);
 	ObjEnemyBossScene_Regist(objEnemy);
-
+	
+	BossName(objEnemy, BOSS_SUWAKO);
 	while (!Obj_IsDeleted(objEnemy))
 	{
 	yield;
