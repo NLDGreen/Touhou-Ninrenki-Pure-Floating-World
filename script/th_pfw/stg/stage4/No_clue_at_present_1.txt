@@ -1,0 +1,148 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Concept"]
+#Text["The title says it all"]
+
+let count = 0;
+let bossObj;
+let bossX = 0;
+let bossY = 0;
+let imgBoss = GetCurrentScriptDirectory ~ "Yuyuko.png";
+let spellCardBackground = GetCurrentScriptDirectory ~ "Textures/Donald Trump.jpg";
+
+#include "script/default_system/Default_ShotConst.txt"
+
+@Initialize {
+
+	SetAutoDeleteObject(true);
+
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+	ObjMove_SetPosition(bossObj,192,-100);
+
+	ObjMove_SetDestAtSpeed(bossObj,GetStgFrameWidth/2,GetStgFrameHeight/3,5);
+
+	mainTask;
+}
+
+@Event {
+
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE) {
+		SetScriptResult(22500);
+	}
+
+	case(EV_REQUEST_TIMER) {
+		SetScriptResult(120);
+	}
+
+}
+
+@MainLoop {
+
+	bossX = ObjMove_GetX(bossObj);
+	bossY = ObjMove_GetY(bossObj);
+
+	ObjEnemy_SetIntersectionCircleToShot(bossObj,bossX,bossY,24);
+	ObjEnemy_SetIntersectionCircleToPlayer(bossObj,bossX,bossY,32);
+
+	yield;
+
+}
+
+@Finalize {
+
+}
+
+function wait(w) { loop(w) {yield;} }
+
+task mainTask {
+	renderBoss;
+	fire;
+	scriptEnd;
+}
+
+task renderBG {
+
+}
+
+task renderBoss {
+
+	let dir;
+	let speed;
+
+	ObjPrim_SetTexture(bossObj,imgBoss);
+	ObjSprite2D_SetSourceRect(bossObj,0,0,224,200);
+	ObjSprite2D_SetDestCenter(bossObj);
+	ObjRender_SetScaleXYZ(bossObj,0.4,0.4,0);
+
+	while(!Obj_IsDeleted(bossObj)) {
+
+		dir = ObjMove_GetAngle(bossObj);
+		speed = ObjMove_GetSpeed(bossObj);
+
+		if (speed == 0) { ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+		else if (cos(dir) < 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+		else if (cos(dir) > 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,180,0); }
+		yield;
+
+	}
+
+}
+
+function angleToPlayer {
+
+	let dir = atan2(GetPlayerY-bossY,GetPlayerX-bossX);
+	return dir
+
+}
+	
+task fire {
+	wait(120);
+	loop {
+		loop(1) {
+			ObjMove_SetDestAtFrame(bossObj,rand(120,GetStgFrameWidth-120),rand(GetStgFrameHeight/3,GetStgFrameHeight/6),60);
+			loop(10) {
+				objCreate;
+				wait(3);
+			}
+		wait(30);
+		}
+		wait(60);
+		ObjMove_SetDestAtFrame(bossObj,GetStgFrameWidth/2,GetStgFrameHeight/3,60);
+		wait(60);
+	}
+}
+
+task objCreate {
+	ascent(h in -4..5) {
+		ascent(i in -4..5) {
+			ascent(j in 0..2) {
+				let obj = CreateShotA1(ObjMove_GetX(bossObj)+i*12,ObjMove_GetY(bossObj)+h*12,0,0,41,30);
+				ObjMove_SetAngle(obj,atan2(ObjMove_GetY(bossObj)-ObjMove_GetY(obj),ObjMove_GetX(bossObj)-ObjMove_GetX(obj))+180);
+				objEdit(obj,i*22,h*22,2*j-1);
+			}
+		#yield;
+		}
+	}
+}
+
+task objEdit(obj,relativex,relativey,posmultiplier) {
+	wait(0);
+	ObjMove_SetSpeed(obj,((relativex^2+relativey^2)^0.5)/35+1);
+	ObjMove_SetX(obj,ObjMove_GetX(obj)+100*posmultiplier);
+	ObjMove_SetY(obj,ObjMove_GetY(obj)-50);
+	ObjMove_SetAngularVelocity(obj,posmultiplier);
+	wait(360);
+	ObjMove_SetAngularVelocity(obj,0);
+}
+
+task scriptEnd {
+	while(ObjEnemy_GetInfo(bossObj,INFO_LIFE) > 0) {
+		yield;
+	}
+	Obj_Delete(bossObj);
+	DeleteShotAll(TYPE_ALL,TYPE_ITEM);
+	CloseScript(GetOwnScriptID);
+
+}

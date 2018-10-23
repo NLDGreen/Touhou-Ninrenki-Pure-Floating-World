@@ -1,0 +1,170 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Stage 2 Boss: Kekuro (Spellcard 1)"]
+#Text[""]
+
+let angleCount = 0;
+let count = 0;
+let loopCount = 24;
+let bossObj;
+let bossX = 0;
+let bossY = 0;
+let speed;
+let imgBoss = GetCurrentScriptDirectory ~ "Yuyuko.png";
+
+#include "script/default_system/Default_ShotConst.txt"
+#include "script/default_system/Default_Effect.txt"
+
+@Initialize {
+
+	SetAutoDeleteObject(true);
+
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+
+	ObjMove_SetDestAtSpeed(bossObj,192,GetStgFrameHeight/3,5);
+	
+	mainTask;
+	ObjEnemy_SetDamageRate(bossObj,0,0);
+}
+
+@Event {
+
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE) {
+		SetScriptResult(1800);
+	}
+	case(EV_REQUEST_TIMER) {
+		SetScriptResult(60);
+	}
+}
+
+@MainLoop {
+
+	bossX = ObjMove_GetX(bossObj);
+	bossY = ObjMove_GetY(bossObj);
+
+	ObjEnemy_SetIntersectionCircleToShot(bossObj,bossX,bossY,24);
+	ObjEnemy_SetIntersectionCircleToPlayer(bossObj,bossX,bossY,32);
+
+	yield;
+
+}
+
+@Finalize {
+
+}
+
+function wait(w) { loop(w) {yield;} }
+
+task mainTask {
+	renderBoss;
+	fire;
+	scriptEnd;
+}
+
+task renderBoss {
+
+	let dir;
+	let speed;
+
+	ObjPrim_SetTexture(bossObj,imgBoss);
+	ObjSprite2D_SetSourceRect(bossObj,0,0,224,200);
+	ObjSprite2D_SetDestCenter(bossObj);
+	ObjRender_SetScaleXYZ(bossObj,0.4,0.4,0);
+
+	while(!Obj_IsDeleted(bossObj)) {
+
+		dir = ObjMove_GetAngle(bossObj);
+		speed = ObjMove_GetSpeed(bossObj);
+
+		if (speed == 0) { ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+		else if (cos(dir) < 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,0,0); }
+		else if (cos(dir) > 0) {ObjSprite2D_SetSourceRect(bossObj,0,0,224,200); ObjRender_SetAngleXYZ(bossObj,0,180,0); }
+		yield;
+	}
+
+}
+
+function angleToPlayer {
+
+	let dir = atan2(GetPlayerY-bossY,GetPlayerX-bossX);
+	return dir
+
+}
+
+task fire {
+	wait(120);
+	loop {
+		let random = rand(0,360);
+		loop(10) {
+			wait(6);
+			shotCeption(16,random);
+			count ++;
+		}
+		wait(60);
+	}
+}
+
+task shotCeption(loopCount,angle) {
+	count ++;
+	ascent(i in 0..loopCount) {
+		let obj = CreateShotA1(ObjMove_GetX(bossObj),ObjMove_GetY(bossObj),6,i*(360/loopCount)+(180/loopCount)+angle+count*0,255,30);
+		objEdit(obj);
+	}
+}
+
+task objEdit(obj) {
+	ascent(i in 0..120) {
+		ObjMove_SetSpeed(obj,7.25-(i*(8/100)));
+		yield;
+	}
+	if(!Obj_IsDeleted(obj)) {
+	ascent(i in 0..7) {
+		let newObj = CreateShotA1(ObjMove_GetX(obj),ObjMove_GetY(obj),2,ObjMove_GetAngle(obj)+120+i*(120/6),121,30);
+		objTestfor(newObj);
+	}
+	}
+	Obj_Delete(obj);
+}
+
+task objTestfor(obj) {
+	let delete = 0;
+	while(!Obj_IsDeleted(obj)) {
+		if(GetObjectDistance(bossObj,obj) < 2) {
+			delete = rand(0,4);
+			if(delete >= 1) {
+				let random = rand(130,410);
+				ObjEnemy_SetDamageRate(bossObj,100,100);
+				let obj = CreateShotA1(ObjMove_GetX(bossObj),ObjMove_GetY(bossObj),5,random,141,30);
+				objHome(obj);
+			}
+		Obj_Delete(obj);
+		}
+	yield;
+	}
+}
+
+task objHome(obj) {
+	wait(30);
+	loop(60) {
+		ObjMove_SetSpeed(obj,ObjMove_GetSpeed(obj)-(5/60));
+		yield;
+	}
+	ObjMove_SetAngle(obj,GetAngleToPlayer(obj));
+	while(!Obj_IsDeleted(obj)) {
+		ObjMove_SetSpeed(obj,ObjMove_GetSpeed(obj)+0.1);
+		yield;
+	}
+				
+}
+
+task scriptEnd {
+	while(ObjEnemy_GetInfo(bossObj,INFO_LIFE) > 0) {
+		yield;
+	}
+	Obj_Delete(bossObj);
+	DeleteShotAll(TYPE_ALL,TYPE_ITEM);
+	CloseScript(GetOwnScriptID);
+
+}

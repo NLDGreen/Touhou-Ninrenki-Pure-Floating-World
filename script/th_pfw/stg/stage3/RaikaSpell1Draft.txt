@@ -97,37 +97,40 @@ task fire {
 	loop {
 		loop(2) {
 			encaseShots(rev);
-			rev = rev * -1
+			rev = rev * -1;
+			
 		}
-		wait(300);
+		wait(120);
 	}
 }
 
 task encaseShots(reverse) {
-	loop(60) {
+	ascent(h in 0..60) {
 		ascent(i in 0..4) {
-			let obj = CreateShotA1(ObjMove_GetX(bossObj),ObjMove_GetY(bossObj),4,GetAngleToPlayer(bossObj)+i*(180/4)*reverse,61,30);
+			let obj = CreateShotA1(ObjMove_GetX(bossObj),ObjMove_GetY(bossObj),6,GetAngleToPlayer(bossObj)+i*(180/4)*reverse,61,30);
 			objEdit(obj,reverse);
 		}
-		yield;
+	yield;
 	}
+	ObjMove_SetDestAtFrame(bossObj,GetStgFrameWidth/2+rand(-150,150),GetStgFrameHeight/4+rand(-50,50),60);
 }
 
 task objEdit(obj,reverse) {
 	let ascentCount = 0;
 	let randDel = 0;
 	while((ObjMove_GetX(obj) > 0) && (ObjMove_GetX(obj) < GetStgFrameWidth) && (ObjMove_GetY(obj) > 0) && (ObjMove_GetY(obj) < GetStgFrameHeight)) {
-		ObjMove_SetAngularVelocity(obj,6*sin(ascentCount*6)*reverse);
+		ObjMove_SetAngularVelocity(obj,18*sin(ascentCount*6)*reverse);
 		ascentCount ++;
 		yield;
 	}
-		ObjMove_SetAngle(obj,rand(0,360));
+		CreateStraightLaserA1(ObjMove_GetX(bossObj),ObjMove_GetY(bossObj),atan2(ObjMove_GetY(obj)-bossY,ObjMove_GetX(obj)-bossX),700,15,15,161,30);
+		ObjMove_SetAngle(obj,GetAngleToPlayer(obj));
 		ObjMove_SetAngularVelocity(obj,0);
 		ObjMove_SetSpeed(obj,0);
 		randDel = rand(0,2);
 		if(randDel == 1) {Obj_Delete(obj);}
 		while(!Obj_IsDeleted(obj)) {
-			ObjMove_SetSpeed(obj,ObjMove_GetSpeed(obj)+0.01);
+			ObjMove_SetSpeed(obj,ObjMove_GetSpeed(obj)+0.02);
 			yield;
 		}
 }
